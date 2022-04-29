@@ -9,6 +9,7 @@ import Foundation
 import Alamofire
 import RxSwift
 import RxCocoa
+import RxRelay
 import RxOptional
 import RxAlamofire
 
@@ -57,44 +58,75 @@ public class Mirror: Encodable {
     var agentVersion: String? = nil
     
     // MARK: - Constants & Variables
-    private var hasNecessaryParameter: Bool {
-        organizationID.isNotEmpty &&
+    var hasNecessaryParameter: Bool {
+        guard let urlAlias = urlAlias else {
+            return false
+        }
+        return organizationID.isNotEmpty &&
         domainAddress.isNotEmpty &&
-        (urlAlias != nil) && (urlAlias?.isNotEmpty ?? false) &&
+        urlAlias.isNotEmpty &&
         visitorID.isNotEmpty &&
         visitorType.rawValue.isNotEmpty &&
         eventType.rawValue.isNotEmpty &&
         trackingFlag.rawValue.isNotEmpty
     }
     
+    private let scheduler: SchedulerType
+    
     private let disposeBag = DisposeBag()
     
     private var timerObserver: Disposable?
     
+    var isStandardPingRelay = BehaviorRelay<Bool>(value: false)
+    
     // MARK: - init
-    public init(environment: Environment, organizationID: String = "1", domainAddress: String = "scmp.com", visitorType: VisitorType) {
+    public init(environment: Environment = .prod,
+                organizationID: String = "1",
+                domainAddress: String = "scmp.com",
+                visitorType: VisitorType = .guest,
+                scheduler: SchedulerType = SerialDispatchQueueScheduler(qos: .default)) {
         self.environment = environment
         self.organizationID = organizationID
         self.domainAddress = domainAddress
         self.visitorType = visitorType
+        self.scheduler = scheduler
+        
+        isStandardPingRelay
+            .asObservable()
+            .distinctUntilChanged()
+            .skip(1)
+            .subscribe(onNext: { [weak self] isStandardPing in
+                guard let self = self else { return }
+                if isStandardPing {
+                    self.timerObserver = self.standardPings()
+                } else {
+                    self.timerObserver?.dispose()
+                }
+            }).disposed(by: disposeBag)
+    }
+    
+    // MARK: - Ping
+    func ping() -> Observable<HTTPURLResponse> {
+        logger.debug("[Track-Mirror] send ping parameters: \(asDictionary())")
+        return RxAlamofire.requestResponse(.get, environment.pingUrl, parameters: asDictionary())
     }
     
     // MARK: - Standard Pings
-    public func startPing(urlAlias: String,
-                          visitorEngagedTime: Int? = nil,
-                          articleSection: String? = nil,
-                          articleAuthors: String? = nil,
-                          pageTitle: String? = nil,
-                          referrerFromSameDomain: String? = nil,
-                          referrerFromOtherDomain: String? = nil,
-                          y1: Int? = nil,
-                          y2: Int? = nil,
-                          metadata: String? = nil,
-                          ff: Int? = nil,
-                          agentVersion: String? = nil) {
+    public func startStandardPings(urlAlias: String,
+                                   articleSection: String? = nil,
+                                   articleAuthors: String? = nil,
+                                   pageTitle: String? = nil,
+                                   referrerFromSameDomain: String? = nil,
+                                   referrerFromOtherDomain: String? = nil,
+                                   y1: Int? = nil,
+                                   y2: Int? = nil,
+                                   metadata: String? = nil,
+                                   ff: Int? = nil,
+                                   agentVersion: String? = nil) {
         
         self.urlAlias = urlAlias
-        self.visitorEngagedTime = visitorEngagedTime
+        self.visitorEngagedTime = 0
+        self.sequenceNumber = 1
         self.articleSection = articleSection
         self.articleAuthors = articleAuthors
         self.pageTitle = pageTitle
@@ -107,17 +139,25 @@ public class Mirror: Encodable {
         self.agentVersion = agentVersion
         
         guard hasNecessaryParameter else {
-            logger.debug("[Track-Mirror] ping falied, some necessary parameters missing")
+            logger.debug("[Track-Mirror] ping falied, some necessary parameters not qualified")
             return
         }
-        let period = 15
-        timerObserver = Observable<Int>.timer(.seconds(0), period: .seconds(period), scheduler: MainScheduler.instance)
+        
+        isStandardPingRelay.accept(true)
+    }
+    
+    func standardPingsTimer(period: Int) -> Observable<Int> {
+        Observable<Int>.timer(.seconds(0), period: .seconds(period), scheduler: scheduler)
+    }
+    
+    func standardPings() -> Disposable {
+        let perioid = 15
+        return standardPingsTimer(period: perioid)
             .flatMap { [weak self] times -> Observable<HTTPURLResponse> in
                 guard let self = self else { return .empty() }
-                let times = times + 1
-                self.sequenceNumber = times
-                logger.debug("[Track-Mirror] send ping parameters: \(self.parameters)")
-                return RxAlamofire.requestResponse(.get, self.environment.pingUrl, parameters: self.parameters)
+                self.visitorEngagedTime = times * perioid
+                self.sequenceNumber = times + 1
+                return self.ping()
             }
             .subscribe(onNext: { response in
                 logger.debug("[Track-Mirror] ping success, response: \(response.statusCode)")
@@ -126,19 +166,24 @@ public class Mirror: Encodable {
             })
     }
     
-    public func stopPing() {
-        timerObserver?.dispose()
+    public func stopStandardPings() {
+        isStandardPingRelay.accept(false)
         logger.debug("[Track-Mirror] stop ping")
+        forcePing()
+    }
+    
+    // MARK: - Force Ping
+    func forcePing() {
+        ping().subscribe(onNext: { response in
+            logger.debug("[Track-Mirror] force ping success, response: \(response.statusCode)")
+        }, onError: {
+            logger.debug("[Track-Mirror] force ping failed, error: \($0)")
+        }).disposed(by: disposeBag)
     }
 }
 
 // MARK: - encode
 extension Mirror {
-    
-    var parameters: [String: Any] {
-      (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(self)) as? [String: Any]) ?? [:]
-    }
-    
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(organizationID, forKey: .k)

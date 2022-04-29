@@ -17,14 +17,10 @@ public enum Environment {
     }
     
     public var pingUrl: String {
-        var apiUrl = apiUrl
-        apiUrl.append(contentsOf: "/ping")
-        return apiUrl
+        apiUrl + "/ping"
     }
     
     public var clickUrl: String {
-        var apiUrl = apiUrl
-        apiUrl.append(contentsOf: "/click")
-        return apiUrl
+        apiUrl + "/click"
     }
 }

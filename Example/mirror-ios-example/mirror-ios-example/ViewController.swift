@@ -11,7 +11,7 @@ import RxSwift
 
 class ViewController: UIViewController {
     
-    let mirror = Mirror(environment: .uat, visitorType: .guest)
+    let mirror = Mirror(environment: .uat)
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -19,11 +19,11 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startPingButton(_ sender: UIButton) {
-        mirror.startPing(urlAlias: "/news/asia", pageTitle: "Test Page Title")
+        mirror.startStandardPings(urlAlias: "/news/asia", pageTitle: "Test Page Title")
     }
     
     @IBAction func stopPingButton(_ sender: UIButton) {
-        mirror.stopPing()
+        mirror.stopStandardPings()
     }
 }
 

@@ -35,6 +35,8 @@ let package = Package(
             resources: [.process("NanoID/LICENSE"), .process("NanoID/README.md")]),
         .testTarget(
             name: "mirror-iosTests",
-            dependencies: ["mirror-ios"]),
+            dependencies: ["mirror-ios",
+                           .product(name: "RxTest", package: "RxSwift"),
+                           .product(name: "RxBlocking", package: "RxSwift")]),
     ]
 )
