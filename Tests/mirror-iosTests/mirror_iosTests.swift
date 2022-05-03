@@ -32,7 +32,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertFalse(mirror.hasNecessaryParameter)
         mirror.urlAlias = ""
         XCTAssertFalse(mirror.hasNecessaryParameter)
-        mirror.urlAlias = "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        mirror.urlAlias = "/news/asia"
         XCTAssertTrue(mirror.hasNecessaryParameter)
     }
     
@@ -55,15 +55,22 @@ final class mirror_iosTests: XCTestCase {
     
     // MARK: - Test Ping
     func testStartStandardLogicSuccess() throws {
+        XCTAssertFalse(mirror.hasNecessaryParameter)
+        XCTAssertNil(mirror.timerObserver)
         mirror.startStandardPings(urlAlias: "/news/asia", pageTitle: "Test Page Title")
         XCTAssertTrue(mirror.hasNecessaryParameter)
-        XCTAssertTrue(mirror.isStandardPingRelay.value)
+        XCTAssertNotNil(mirror.timerObserver)
+        mirror.startStandardPings(urlAlias: "/news/asia", pageTitle: "Test Page Title")
+        XCTAssertTrue(mirror.hasNecessaryParameter)
+        XCTAssertNotNil(mirror.timerObserver)
     }
     
     func testStartStandardLogicFail() throws {
+        XCTAssertFalse(mirror.hasNecessaryParameter)
+        XCTAssertNil(mirror.timerObserver)
         mirror.startStandardPings(urlAlias: "")
         XCTAssertFalse(mirror.hasNecessaryParameter)
-        XCTAssertFalse(mirror.isStandardPingRelay.value)
+        XCTAssertNil(mirror.timerObserver)
     }
     
     func testFailPing() throws {
@@ -74,14 +81,28 @@ final class mirror_iosTests: XCTestCase {
     
     func testSuccessPing() throws {
         mirror = Mirror(environment: .uat)
-        mirror.urlAlias = "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        mirror.urlAlias = "/news/asia"
         XCTAssertTrue(mirror.hasNecessaryParameter)
         XCTAssert(try mirror.ping().toBlocking().first()?.statusCode == 200, "statusCode is not matching the server data")
     }
     
     func testStopPing() throws {
+        mirror.startStandardPings(urlAlias: "/news/asia", pageTitle: "Test Page Title")
+        XCTAssertNotNil(mirror.timerObserver)
         mirror.stopStandardPings()
-        XCTAssertFalse(mirror.isStandardPingRelay.value)
+        XCTAssertNil(mirror.timerObserver)
+    }
+    
+    func testMirrorWeak() {
+        var mirror: Mirror? = Mirror(environment: .uat)
+        weak var weakMirror = mirror
+        
+        XCTAssertNotNil(weakMirror)
+        
+        mirror?.startStandardPings(urlAlias: "/news/asia")
+        mirror = nil
+        
+        XCTAssertNil(weakMirror)
     }
     
     func testPingTimer() {

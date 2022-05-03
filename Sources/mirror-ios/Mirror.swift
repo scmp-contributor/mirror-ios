@@ -75,9 +75,7 @@ public class Mirror: Encodable {
     
     private let disposeBag = DisposeBag()
     
-    private var timerObserver: Disposable?
-    
-    var isStandardPingRelay = BehaviorRelay<Bool>(value: false)
+    var timerObserver: Disposable?
     
     // MARK: - init
     public init(environment: Environment = .prod,
@@ -90,25 +88,11 @@ public class Mirror: Encodable {
         self.domainAddress = domainAddress
         self.visitorType = visitorType
         self.scheduler = scheduler
-        
-        isStandardPingRelay
-            .asObservable()
-            .distinctUntilChanged()
-            .skip(1)
-            .subscribe(onNext: { [weak self] isStandardPing in
-                guard let self = self else { return }
-                if isStandardPing {
-                    self.timerObserver = self.standardPings()
-                } else {
-                    self.timerObserver?.dispose()
-                }
-            }).disposed(by: disposeBag)
     }
     
     // MARK: - Ping
     func ping() -> Observable<HTTPURLResponse> {
-        logger.debug("[Track-Mirror] send ping parameters: \(asDictionary())")
-        return RxAlamofire.requestResponse(.get, environment.pingUrl, parameters: asDictionary())
+        RxAlamofire.requestResponse(.get, environment.pingUrl, parameters: asDictionary())
     }
     
     // MARK: - Standard Pings
@@ -143,7 +127,12 @@ public class Mirror: Encodable {
             return
         }
         
-        isStandardPingRelay.accept(true)
+        guard timerObserver == nil else {
+            logger.debug("[Track-Mirror] It's standard pings already")
+            return
+        }
+        
+        timerObserver = standardPings()
     }
     
     func standardPingsTimer(period: Int) -> Observable<Int> {
@@ -152,28 +141,32 @@ public class Mirror: Encodable {
     
     func standardPings() -> Disposable {
         let period = 15
+        var parameters: [String: Any] = [:]
         return standardPingsTimer(period: period)
             .flatMap { [weak self] times -> Observable<HTTPURLResponse> in
                 guard let self = self else { return .empty() }
                 self.visitorEngagedTime = times * period
                 self.sequenceNumber = times + 1
+                parameters = self.asDictionary()
                 return self.ping()
             }
             .subscribe(onNext: { response in
-                logger.debug("[Track-Mirror] ping success, response: \(response.statusCode)")
+                logger.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
             })
     }
     
     public func stopStandardPings() {
-        isStandardPingRelay.accept(false)
-        logger.debug("[Track-Mirror] stop ping")
+        timerObserver?.dispose()
+        timerObserver = nil
+        logger.debug("[Track-Mirror] stop ping success")
         forcePing()
     }
     
     // MARK: - Force Ping
     func forcePing() {
+        let parameters: [String: Any] = asDictionary()
         ping().subscribe(onNext: { response in
-            logger.debug("[Track-Mirror] force ping success, response: \(response.statusCode)")
+            logger.debug("[Track-Mirror] force ping success, parameters: \(parameters), response: \(response.statusCode)")
         }).disposed(by: disposeBag)
     }
 }
