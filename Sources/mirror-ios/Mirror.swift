@@ -151,18 +151,16 @@ public class Mirror: Encodable {
     }
     
     func standardPings() -> Disposable {
-        let perioid = 15
-        return standardPingsTimer(period: perioid)
+        let period = 15
+        return standardPingsTimer(period: period)
             .flatMap { [weak self] times -> Observable<HTTPURLResponse> in
                 guard let self = self else { return .empty() }
-                self.visitorEngagedTime = times * perioid
+                self.visitorEngagedTime = times * period
                 self.sequenceNumber = times + 1
                 return self.ping()
             }
             .subscribe(onNext: { response in
                 logger.debug("[Track-Mirror] ping success, response: \(response.statusCode)")
-            }, onError: {
-                logger.debug("[Track-Mirror] ping failed, error: \($0)")
             })
     }
     
@@ -176,8 +174,6 @@ public class Mirror: Encodable {
     func forcePing() {
         ping().subscribe(onNext: { response in
             logger.debug("[Track-Mirror] force ping success, response: \(response.statusCode)")
-        }, onError: {
-            logger.debug("[Track-Mirror] force ping failed, error: \($0)")
         }).disposed(by: disposeBag)
     }
 }

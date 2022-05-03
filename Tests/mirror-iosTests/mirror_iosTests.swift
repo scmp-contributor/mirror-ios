@@ -32,7 +32,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertFalse(mirror.hasNecessaryParameter)
         mirror.urlAlias = ""
         XCTAssertFalse(mirror.hasNecessaryParameter)
-        mirror.urlAlias = "/news/asia"
+        mirror.urlAlias = "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         XCTAssertTrue(mirror.hasNecessaryParameter)
     }
     
@@ -74,7 +74,7 @@ final class mirror_iosTests: XCTestCase {
     
     func testSuccessPing() throws {
         mirror = Mirror(environment: .uat)
-        mirror.urlAlias = "/news/asia"
+        mirror.urlAlias = "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         XCTAssertTrue(mirror.hasNecessaryParameter)
         XCTAssert(try mirror.ping().toBlocking().first()?.statusCode == 200, "statusCode is not matching the server data")
     }
