@@ -19,11 +19,11 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startPingButton(_ sender: UIButton) {
-        mirror.startStandardPings(urlAlias: "/news/asia", pageTitle: "Test Page Title")
+        mirror.ping(data: TrackData(path: "testing.com", pageTitle: "Test Page Title"))
     }
     
     @IBAction func stopPingButton(_ sender: UIButton) {
-        mirror.stopStandardPings()
+        mirror.stopStandardPings(resetData: true)
     }
 }
 

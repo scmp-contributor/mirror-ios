@@ -12,4 +12,13 @@ public enum EventType: String {
     case ping
     /// click: to indicate a link was clicked
     case click
+    
+    func getUrl(_ environment: Environment) -> String {
+        switch self {
+        case .ping:
+            return environment.pingUrl
+        case .click:
+            return environment.clickUrl
+        }
+    }
 }
