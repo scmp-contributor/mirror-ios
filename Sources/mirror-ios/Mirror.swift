@@ -37,19 +37,12 @@ public class Mirror {
     let agentVersion: String = "0.0.1"
     
     // MARK: - Constants & Variables
-    internal let maximumPingInterval = 1005
-    
-    internal let scheduler: SchedulerType
-    
-    internal let disposeBag = DisposeBag()
-    
-    internal var engageTimer: Disposable?
-    internal var standardPingsTimer: Disposable?
-    
-    internal let enterForgroundObservable = NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
-    internal let enterBackgroundObservable = NotificationCenter.default.rx.notification(UIApplication.didEnterBackgroundNotification)
-    
-    internal var lastPingData: TrackData?
+    let scheduler: SchedulerType
+    let disposeBag = DisposeBag()
+    let maximumPingInterval = 1005
+    var engageTimer: Disposable?
+    var standardPingsTimer: Disposable?
+    var lastPingData: TrackData?
     
     // MARK: - init
     public init(environment: Environment = .prod,
@@ -64,23 +57,34 @@ public class Mirror {
         self.scheduler = scheduler
     }
     
-    // MARK: - Ping
-    internal func sendMirror(eventType: EventType, parameters: [String: Any]) -> Observable<HTTPURLResponse> {
+    // MARK: - Update Visitor Type
+    public func updateVisitorType(_ visitorType: VisitorType) {
+        self.visitorType = visitorType
+    }
+    
+    // MARK: - Send Mirror Event
+    func sendMirror(eventType: EventType, parameters: [String: Any]) -> Observable<HTTPURLResponse> {
         let url = eventType.getUrl(environment)
         return RxAlamofire.requestResponse(.get, url, parameters: parameters)
     }
     
-    // MARK: - Standard Pings
-    public func ping(data: TrackData, isForcePings: Bool = false) {
+    // MARK: - Ping
+    
+    /// - Parameter data: The TrackData for mirror parameters
+    public func ping(data: TrackData) {
+        sendPing(data: data)
+    }
+    
+    func sendPing(data: TrackData, isForcePings: Bool = false) {
         
         if !isForcePings {
             guard standardPingsTimer == nil else { return }
             sequenceNumber = 1
             engagedTime = 0
-            engageTimer = engageTimerDisposable()
-            standardPingsTimer = standardPingsTimerDisposable(startSeconds: 15, period: 15, data: data)
-            observeEnterBackground()
-            observeEnterForeground()
+            engageTimer = engageTimerObservable(period: 1).subscribe()
+            standardPingsTimer = standardPingsTimerObservable(startSeconds: 15, period: 15, data: data).subscribe()
+            observeEnterBackground().subscribe().disposed(by: disposeBag)
+            observeEnterForeground().subscribe().disposed(by: disposeBag)
         }
         
         let parameters = getParameters(eventType: .ping, data: data)
@@ -93,45 +97,55 @@ public class Mirror {
             }).disposed(by: disposeBag)
     }
     
-    internal func engageTimerDisposable() -> Disposable {
-        Observable<Int>.interval(.seconds(1), scheduler: scheduler)
+    // Timer for engage time
+    func engageTimerObservable(period: Int) -> Observable<Int> {
+        Observable<Int>.interval(.seconds(period), scheduler: scheduler)
             .take(until: { [weak self] _ in
                 guard let self = self else { return true }
                 return self.engagedTime >= self.maximumPingInterval
-            })
-            .subscribe(onNext: { [weak self] _ in
+            }).do(onNext: { [weak self] _ in
                 self?.engagedTime += 1
             }, onCompleted: { [weak self] in
                 self?.stopStandardPings()
             })
     }
     
-    internal func standardPingsTimerDisposable(startSeconds: Int, period: Int, data: TrackData) -> Disposable {
+    // Timer for standard pings
+    func standardPingsTimerObservable(startSeconds: Int, period: Int, data: TrackData) -> Observable<Int> {
         Observable<Int>.timer(.seconds(startSeconds), period: .seconds(period), scheduler: scheduler)
-            .subscribe(onNext: { [weak self] _ in
+            .do(onNext: { [weak self] _ in
                 self?.sequenceNumber += 1
-                self?.ping(data: data, isForcePings: true)
+                self?.sendPing(data: data, isForcePings: true)
             })
     }
     
-    internal func observeEnterBackground() {
-        enterBackgroundObservable.subscribe(onNext: { [weak self] _ in
-            guard let self = self else { return }
-            self.stopStandardPings()
-        }).disposed(by: disposeBag)
+    // observable for enter background
+    func observeEnterBackground() -> Observable<Notification> {
+        NotificationCenter.default.rx.notification(UIApplication.didEnterBackgroundNotification)
+            .do(onNext: { [weak self] _ in
+                guard let self = self else { return }
+                self.stopStandardPings()
+            })
     }
     
-    internal func observeEnterForeground() {
-        enterForgroundObservable.subscribe(onNext: { [weak self] _ in
-            guard let self = self, let lastPingData = self.lastPingData else { return }
-            self.ping(data: lastPingData, isForcePings: true)
-            guard self.engagedTime < self.maximumPingInterval else { return }
-            self.engageTimer = self.engageTimerDisposable()
-            self.standardPingsTimer = self.standardPingsTimerDisposable(startSeconds: 15, period: 15, data: lastPingData)
-        }).disposed(by: disposeBag)
+    // observable for enter foreground
+    func observeEnterForeground() -> Observable<Notification> {
+        NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
+            .do(onNext: { [weak self] _ in
+                guard let self = self, let lastPingData = self.lastPingData else { return }
+                self.sendPing(data: lastPingData, isForcePings: true)
+                guard self.engagedTime < self.maximumPingInterval else { return }
+                self.engageTimer = self.engageTimerObservable(period: 1).subscribe()
+                self.standardPingsTimer = self.standardPingsTimerObservable(startSeconds: 15, period: 15, data: lastPingData).subscribe()
+            })
     }
     
-    public func stopStandardPings(resetData: Bool = false) {
+    // stop ping
+    public func stopPing() {
+        stopStandardPings(resetData: true)
+    }
+    
+    func stopStandardPings(resetData: Bool = false) {
         guard standardPingsTimer != nil || engageTimer != nil else { return }
         standardPingsTimer?.dispose()
         standardPingsTimer = nil
@@ -144,6 +158,8 @@ public class Mirror {
     }
     
     // MARK: - Click
+    
+    /// - Parameter data: The TrackData for mirror parameters
     public func click(data: TrackData) {
         let parameters = getParameters(eventType: .click, data: data)
         
@@ -155,7 +171,7 @@ public class Mirror {
 }
 
 extension Mirror {
-    public func getParameters(eventType: EventType, data: TrackData) -> [String: Any] {
+    func getParameters(eventType: EventType, data: TrackData) -> [String: Any] {
         
         var dictionary: [String: Any] = [:]
         

@@ -21,6 +21,6 @@ public enum Environment {
     }
     
     public var clickUrl: String {
-        apiUrl + "/click"
+        apiUrl + "/ping"
     }
 }

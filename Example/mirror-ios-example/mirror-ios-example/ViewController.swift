@@ -19,11 +19,12 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startPingButton(_ sender: UIButton) {
-        mirror.ping(data: TrackData(path: "testing.com", pageTitle: "Test Page Title"))
+        let data = TrackData(path: "testing.com", pageTitle: "Test Page Title")
+        mirror.ping(data: data)
     }
     
     @IBAction func stopPingButton(_ sender: UIButton) {
-        mirror.stopStandardPings(resetData: true)
+        mirror.stopPing()
     }
 }
 
