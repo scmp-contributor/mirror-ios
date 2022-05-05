@@ -18,7 +18,6 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         // .package(url: /* package url */, from: "1.0.0"),
         .package(url: "https://github.com/ReactiveX/RxSwift.git", .upToNextMajor(from: "6.5.0")),
-        .package(url: "https://github.com/RxSwiftCommunity/RxOptional.git", .upToNextMajor(from: "5.0.0")),
         .package(url: "https://github.com/RxSwiftCommunity/RxAlamofire.git", .upToNextMajor(from: "6.1.0")),
         .package(url: "https://github.com/SwiftyBeaver/SwiftyBeaver.git", .upToNextMajor(from: "1.9.0"))
     ],
@@ -28,8 +27,6 @@ let package = Package(
         .target(
             name: "mirror-ios",
             dependencies: ["RxSwift",
-                           .product(name: "RxCocoa", package: "RxSwift"),
-                           "RxOptional",
                            "RxAlamofire",
                            "SwiftyBeaver"],
             resources: [.process("NanoID/LICENSE"), .process("NanoID/README.md")]),

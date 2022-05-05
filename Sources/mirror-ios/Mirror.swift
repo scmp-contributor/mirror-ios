@@ -6,11 +6,7 @@
 //
 
 import Foundation
-import Alamofire
 import RxSwift
-import RxCocoa
-import RxRelay
-import RxOptional
 import RxAlamofire
 import UIKit
 

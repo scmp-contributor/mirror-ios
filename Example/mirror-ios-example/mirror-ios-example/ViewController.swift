@@ -7,7 +7,6 @@
 
 import UIKit
 import mirror_ios
-import RxSwift
 
 class ViewController: UIViewController {
     

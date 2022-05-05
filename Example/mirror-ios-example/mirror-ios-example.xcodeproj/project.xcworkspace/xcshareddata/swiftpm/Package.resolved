@@ -29,15 +29,6 @@
         }
       },
       {
-        "package": "RxOptional",
-        "repositoryURL": "https://github.com/RxSwiftCommunity/RxOptional.git",
-        "state": {
-          "branch": null,
-          "revision": "10820dd92601e8cf7b71c763fc7a1cf4d1bb14f5",
-          "version": "5.0.5"
-        }
-      },
-      {
         "package": "RxSwift",
         "repositoryURL": "https://github.com/ReactiveX/RxSwift.git",
         "state": {
