@@ -41,6 +41,7 @@ Pod::Spec.new do |s|
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
     s.dependency 'RxSwift', '~> 6.5.0'
+    s.dependency 'RxCocoa', '~> 6.5.0'
     s.dependency 'RxAlamofire', '~> 6.1.0'
     s.dependency 'SwiftyBeaver', '~> 1.9.0'
 end

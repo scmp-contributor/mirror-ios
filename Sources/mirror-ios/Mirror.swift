@@ -7,6 +7,7 @@
 
 import Foundation
 import RxSwift
+import RxCocoa
 import RxAlamofire
 import UIKit
 
@@ -20,7 +21,7 @@ public class Mirror {
     /// - Parameter d: The domain address that we implement the tracking. (Usually from canonical URL)
     let domain: String
     /// - Parameter u: The unique ID for each visitor, generated on client side and store locally. 21 chars length by NanoID.
-    let visitorID: String = Preferences.sharedInstance.visitorID
+    let uuid: String = Preferences.sharedInstance.uuid
     /// - Parameter vt: The visitor type.
     var visitorType: VisitorType
     /// - Parameter eg: The visitor engaged time on the page in seconds.
@@ -174,7 +175,7 @@ extension Mirror {
         dictionary["k"] = organizationID
         dictionary["d"] = domain
         dictionary["p"] = data.path.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-        dictionary["u"] = visitorID
+        dictionary["u"] = uuid
         dictionary["vt"] = visitorType.rawValue
         dictionary["et"] = eventType.rawValue
         dictionary["nc"] = trackingFlag.rawValue
