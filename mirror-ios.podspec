@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'mirror-ios'
-  s.version          = '0.0.5'
+  s.version          = '0.0.6'
   s.summary          = 'SCMP Mirror iOS SDK'
 
   s.description      = <<-DESC
@@ -25,8 +25,8 @@ Pod::Spec.new do |s|
 
   s.source_files = 'Sources/mirror-ios/**/*'
   
-  s.dependency 'RxSwift'
-  s.dependency 'RxCocoa'
-  s.dependency 'RxAlamofire'
-  s.dependency 'SwiftyBeaver'
+  s.dependency 'RxSwift', '~> 5.1.0'
+  s.dependency 'RxCocoa', '~> 5.1.0'
+  s.dependency 'RxAlamofire', '~> 5.6.0'
+  s.dependency 'SwiftyBeaver', '~> 1.7.0'
 end
