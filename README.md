@@ -1,3 +1,3 @@
 # mirror-ios
 
-A description of this package.
+SCMP Mirror real time tracking platform sdk for iOS

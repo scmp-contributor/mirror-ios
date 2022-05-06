@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/RxSwiftCommunity/RxAlamofire.git",
         "state": {
           "branch": null,
-          "revision": "ecfa0dd15339f5ea8143233cb7fc664a02ea9d44",
-          "version": "6.1.0"
+          "revision": "16858a7955ff8bc3caa51212fd7624f168586773",
+          "version": "5.7.1"
         }
       },
       {
@@ -33,8 +33,8 @@
         "repositoryURL": "https://github.com/ReactiveX/RxSwift.git",
         "state": {
           "branch": null,
-          "revision": "b4307ba0b6425c0ba4178e138799946c3da594f8",
-          "version": "6.5.0"
+          "revision": "cec68169a048a079f461ba203fe85636548d7a89",
+          "version": "5.1.3"
         }
       },
       {
