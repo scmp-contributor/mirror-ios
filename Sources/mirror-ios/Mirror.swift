@@ -102,10 +102,11 @@ public class Mirror {
     // Timer for engage time
     internal func engageTimerObservable(period: Int) -> Observable<Int> {
         Observable<Int>.interval(.seconds(period), scheduler: scheduler)
-            .takeUntil(.exclusive, predicate: { [weak self] _ in
+            .take(until: { [weak self] _ in
                 guard let self = self else { return true }
                 return self.engagedTime >= self.maximumPingInterval
-            }).do(onNext: { [weak self] _ in
+            }, behavior: .exclusive)
+            .do(onNext: { [weak self] _ in
                 self?.engagedTime += 1
             }, onCompleted: { [weak self] in
                 self?.stopStandardPings()
