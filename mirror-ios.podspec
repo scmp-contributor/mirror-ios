@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'mirror-ios'
-  s.version          = '0.0.1'
+  s.version          = '0.0.3'
   s.summary          = 'SCMP Mirror iOS SDK'
 
 # This description is used to generate tags and improve search results.
@@ -40,8 +40,8 @@ Pod::Spec.new do |s|
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
   # s.dependency 'AFNetworking', '~> 2.3'
-    s.dependency 'RxSwift', '~> 6.5.0'
-    s.dependency 'RxCocoa', '~> 6.5.0'
-    s.dependency 'RxAlamofire', '~> 6.1.0'
-    s.dependency 'SwiftyBeaver', '~> 1.9.0'
+    s.dependency 'RxSwift'
+    s.dependency 'RxCocoa'
+    s.dependency 'RxAlamofire'
+    s.dependency 'SwiftyBeaver'
 end
