@@ -28,6 +28,14 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertNotNil(mirror.agentVersion)
     }
     
+    // MARK: - Test Update nvironment
+    func testUpdateEnvironment() {
+        mirror = Mirror(environment: .uat)
+        XCTAssertEqual(mirror.environment, .uat)
+        mirror.updateEnvironment(.prod)
+        XCTAssertEqual(mirror.environment, .prod)
+    }
+    
     // MARK: - Test Update Visitor Type
     func testUpdateVisitorType() {
         mirror = Mirror(environment: .uat, visitorType: .guest)

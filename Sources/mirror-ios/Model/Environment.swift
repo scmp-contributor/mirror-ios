@@ -11,16 +11,16 @@ public enum Environment {
     case uat
     case prod
     
-    var apiUrl: String {
+    internal var apiUrl: String {
         let environment = self == .uat ? "uat-" : ""
         return "https://\(environment)mirror.i-scmp.com"
     }
     
-    public var pingUrl: String {
+    internal var pingUrl: String {
         apiUrl + "/ping"
     }
     
-    public var clickUrl: String {
+    internal var clickUrl: String {
         apiUrl + "/ping"
     }
 }

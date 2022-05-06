@@ -23,7 +23,7 @@ import Foundation
 /// let idFirst = nanoID.new()
 /// let idSecond = nanoID.new()
 
-class NanoID {
+internal class NanoID {
     
     // Shared Parameters
     private var size: Int
@@ -95,13 +95,13 @@ fileprivate class NanoIDHelper {
     }
 }
 
-enum NanoIDAlphabet {
+internal enum NanoIDAlphabet {
     case urlSafe
     case uppercasedLatinLetters
     case lowercasedLatinLetters
     case numbers
     
-    func toString() -> String {
+    internal func toString() -> String {
         switch self {
         case .uppercasedLatinLetters, .lowercasedLatinLetters, .numbers:
             return self.chars()

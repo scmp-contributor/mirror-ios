@@ -13,33 +13,33 @@ import UIKit
 
 public class Mirror {
     
-    let environment: Environment
+    internal var environment: Environment
     
     // MARK: - Mirror SDK Parameters
     /// - Parameter k: The unique organization ID (uuid) from Mirror service. Each organization can hold multiple domains. Please get this value from Mirror team.
-    let organizationID: String
+    internal let organizationID: String
     /// - Parameter d: The domain address that we implement the tracking. (Usually from canonical URL)
-    let domain: String
+    internal let domain: String
     /// - Parameter u: The unique ID for each visitor, generated on client side and store locally. 21 chars length by NanoID.
-    let uuid: String = Preferences.sharedInstance.uuid
+    internal let uuid: String = Preferences.sharedInstance.uuid
     /// - Parameter vt: The visitor type.
-    var visitorType: VisitorType
+    internal var visitorType: VisitorType
     /// - Parameter eg: The visitor engaged time on the page in seconds.
-    var engagedTime = 0
+    internal var engagedTime = 0
     /// - Parameter sq: Sequence number of ping events within same session
-    var sequenceNumber: Int = 1
+    internal var sequenceNumber: Int = 1
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
-    let trackingFlag: TrackingFlag = .true
+    internal let trackingFlag: TrackingFlag = .true
     /// - Parameter v: Agent version
-    let agentVersion: String = "0.0.1"
+    internal let agentVersion: String = "0.0.1"
     
     // MARK: - Constants & Variables
-    let scheduler: SchedulerType
-    let disposeBag = DisposeBag()
-    let maximumPingInterval = 1005
-    var engageTimer: Disposable?
-    var standardPingsTimer: Disposable?
-    var lastPingData: TrackData?
+    internal let scheduler: SchedulerType
+    internal let disposeBag = DisposeBag()
+    internal let maximumPingInterval = 1005
+    internal var engageTimer: Disposable?
+    internal var standardPingsTimer: Disposable?
+    internal var lastPingData: TrackData?
     
     // MARK: - init
     public init(environment: Environment = .prod,
@@ -54,13 +54,18 @@ public class Mirror {
         self.scheduler = scheduler
     }
     
+    // MARK: - Update Environment
+    public func updateEnvironment(_ environment: Environment) {
+        self.environment = environment
+    }
+    
     // MARK: - Update Visitor Type
     public func updateVisitorType(_ visitorType: VisitorType) {
         self.visitorType = visitorType
     }
     
     // MARK: - Send Mirror Event
-    func sendMirror(eventType: EventType, parameters: [String: Any]) -> Observable<HTTPURLResponse> {
+    internal func sendMirror(eventType: EventType, parameters: [String: Any]) -> Observable<HTTPURLResponse> {
         let url = eventType.getUrl(environment)
         return RxAlamofire.requestResponse(.get, url, parameters: parameters)
     }
@@ -72,7 +77,7 @@ public class Mirror {
         sendPing(data: data)
     }
     
-    func sendPing(data: TrackData, isForcePings: Bool = false) {
+    internal func sendPing(data: TrackData, isForcePings: Bool = false) {
         
         if !isForcePings {
             guard standardPingsTimer == nil else { return }
@@ -95,7 +100,7 @@ public class Mirror {
     }
     
     // Timer for engage time
-    func engageTimerObservable(period: Int) -> Observable<Int> {
+    internal func engageTimerObservable(period: Int) -> Observable<Int> {
         Observable<Int>.interval(.seconds(period), scheduler: scheduler)
             .takeUntil(.exclusive, predicate: { [weak self] _ in
                 guard let self = self else { return true }
@@ -108,7 +113,7 @@ public class Mirror {
     }
     
     // Timer for standard pings
-    func standardPingsTimerObservable(startSeconds: Int, period: Int, data: TrackData) -> Observable<Int> {
+    internal func standardPingsTimerObservable(startSeconds: Int, period: Int, data: TrackData) -> Observable<Int> {
         Observable<Int>.timer(.seconds(startSeconds), period: .seconds(period), scheduler: scheduler)
             .do(onNext: { [weak self] _ in
                 self?.sequenceNumber += 1
@@ -117,7 +122,7 @@ public class Mirror {
     }
     
     // observable for enter background
-    func observeEnterBackground() -> Observable<Notification> {
+    internal func observeEnterBackground() -> Observable<Notification> {
         NotificationCenter.default.rx.notification(UIApplication.didEnterBackgroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self else { return }
@@ -126,7 +131,7 @@ public class Mirror {
     }
     
     // observable for enter foreground
-    func observeEnterForeground() -> Observable<Notification> {
+    internal func observeEnterForeground() -> Observable<Notification> {
         NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self, let lastPingData = self.lastPingData else { return }
@@ -142,7 +147,7 @@ public class Mirror {
         stopStandardPings(resetData: true)
     }
     
-    func stopStandardPings(resetData: Bool = false) {
+    internal func stopStandardPings(resetData: Bool = false) {
         guard standardPingsTimer != nil || engageTimer != nil else { return }
         standardPingsTimer?.dispose()
         standardPingsTimer = nil
@@ -168,7 +173,7 @@ public class Mirror {
 }
 
 extension Mirror {
-    func getParameters(eventType: EventType, data: TrackData) -> [String: Any] {
+    internal func getParameters(eventType: EventType, data: TrackData) -> [String: Any] {
         
         var dictionary: [String: Any] = [:]
         
