@@ -52,6 +52,9 @@ public class Mirror {
         self.domain = domain
         self.visitorType = visitorType
         self.scheduler = scheduler
+        
+        observeEnterBackground().subscribe().disposed(by: disposeBag)
+        observeEnterForeground().subscribe().disposed(by: disposeBag)
     }
     
     // MARK: - Update Environment
@@ -85,8 +88,6 @@ public class Mirror {
             engagedTime = 0
             engageTimer = engageTimerObservable(period: 1).subscribe()
             standardPingsTimer = standardPingsTimerObservable(startSeconds: 15, period: 15, data: data).subscribe()
-            observeEnterBackground().subscribe().disposed(by: disposeBag)
-            observeEnterForeground().subscribe().disposed(by: disposeBag)
         }
         
         let parameters = getParameters(eventType: .ping, data: data)
