@@ -98,7 +98,7 @@ final class mirror_iosTests: XCTestCase {
         
         mirror.sendPing(data: data)
         XCTAssertNotNil(mirror.standardPingsTimer)
-        mirror.stopPing()
+        mirror.stopStandardPings(resetData: true)
         XCTAssertNil(mirror.standardPingsTimer)
         XCTAssertNil(mirror.engageTimer)
         XCTAssertNil(mirror.lastPingData)

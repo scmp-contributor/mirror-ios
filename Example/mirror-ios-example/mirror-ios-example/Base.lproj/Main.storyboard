@@ -16,32 +16,100 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="T4w-Qi-hqw">
-                                <rect key="frame" x="164.5" y="145" width="85" height="31"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="stop ping"/>
-                                <connections>
-                                    <action selector="stopPingButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="ZMG-Bf-GzU"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uPh-Rv-ESf">
-                                <rect key="frame" x="164" y="104" width="86" height="31"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="start ping"/>
-                                <connections>
-                                    <action selector="startPingButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="B5P-1l-50u"/>
-                                </connections>
-                            </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="jLW-E2-DGK">
+                                <rect key="frame" x="146" y="427" width="122.5" height="125"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uPh-Rv-ESf">
+                                        <rect key="frame" x="0.0" y="0.0" width="122.5" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="ping"/>
+                                        <connections>
+                                            <action selector="pingButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JBN-0Z-yzd"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gUG-if-fni">
+                                        <rect key="frame" x="0.0" y="47" width="122.5" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="click"/>
+                                        <connections>
+                                            <action selector="clickButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jv8-LG-6mv"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J2o-zR-gJ9">
+                                        <rect key="frame" x="0.0" y="94" width="122.5" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="reset to default"/>
+                                        <connections>
+                                            <action selector="resetButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="M6a-Ul-Dr3"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </stackView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="1oG-eD-Nul">
+                                <rect key="frame" x="16" y="94" width="382" height="289"/>
+                                <subviews>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="path" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lN4-bw-uWG">
+                                        <rect key="frame" x="0.0" y="0.0" width="382" height="44"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="44" id="yqD-hf-LP3"/>
+                                        </constraints>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="section" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="zn6-Fr-TYg">
+                                        <rect key="frame" x="0.0" y="49" width="382" height="44"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="authors" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="uqQ-HF-QXD">
+                                        <rect key="frame" x="0.0" y="98" width="382" height="44"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="pageTitle" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="dd3-cn-FxU">
+                                        <rect key="frame" x="0.0" y="147" width="382" height="44"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="internalReferrer" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="v2N-vm-Z6q">
+                                        <rect key="frame" x="0.0" y="196" width="382" height="44"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="externalReferrer" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="QlY-8P-klw">
+                                        <rect key="frame" x="0.0" y="245" width="382" height="44"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                        <textInputTraits key="textInputTraits"/>
+                                    </textField>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstItem="zn6-Fr-TYg" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="0mr-vC-xAk"/>
+                                    <constraint firstItem="v2N-vm-Z6q" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="5wg-BJ-VDN"/>
+                                    <constraint firstItem="dd3-cn-FxU" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="DF4-OZ-ka6"/>
+                                    <constraint firstItem="lN4-bw-uWG" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="SAh-Ie-0KK"/>
+                                    <constraint firstItem="QlY-8P-klw" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="p1F-V3-zAZ"/>
+                                    <constraint firstItem="uqQ-HF-QXD" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="vx6-tm-Aax"/>
+                                </constraints>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="T4w-Qi-hqw" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="3hP-YK-LPF"/>
-                            <constraint firstItem="T4w-Qi-hqw" firstAttribute="top" secondItem="uPh-Rv-ESf" secondAttribute="bottom" constant="10" id="AQT-rQ-hUw"/>
-                            <constraint firstItem="uPh-Rv-ESf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="oq9-U4-QL3"/>
-                            <constraint firstItem="uPh-Rv-ESf" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="60" id="p4o-nz-Idu"/>
+                            <constraint firstItem="jLW-E2-DGK" firstAttribute="top" secondItem="1oG-eD-Nul" secondAttribute="bottom" constant="44" id="9tS-BW-J2W"/>
+                            <constraint firstItem="jLW-E2-DGK" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="JcF-mt-Xke"/>
+                            <constraint firstItem="1oG-eD-Nul" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="50" id="LXO-xf-rpY"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="1oG-eD-Nul" secondAttribute="trailing" constant="16" id="rkk-lg-KE8"/>
+                            <constraint firstItem="1oG-eD-Nul" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="uWI-cb-voV"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="authorsTextField" destination="uqQ-HF-QXD" id="jlQ-sJ-mSH"/>
+                        <outlet property="externalReferrerTextField" destination="QlY-8P-klw" id="9zw-Hy-rYU"/>
+                        <outlet property="internalReferrerTextField" destination="v2N-vm-Z6q" id="ehz-ts-43C"/>
+                        <outlet property="pageTitleTextField" destination="dd3-cn-FxU" id="hVd-vy-VwN"/>
+                        <outlet property="pathTextField" destination="lN4-bw-uWG" id="MhB-8e-ebM"/>
+                        <outlet property="sectionTextField" destination="zn6-Fr-TYg" id="ehy-n3-50d"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>

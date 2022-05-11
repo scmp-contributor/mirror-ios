@@ -80,14 +80,13 @@ public class Mirror {
         sendPing(data: data)
     }
     
-    internal func sendPing(data: TrackData, isForcePings: Bool = false) {
+    internal func sendPing(data: TrackData, isNewPings: Bool = true,  isForcePings: Bool = false) {
         
-        if !isForcePings {
-            guard standardPingsTimer == nil else { return }
+        if isNewPings {
+            stopStandardPings(resetData: true)
             sequenceNumber = 1
             engagedTime = 0
-            engageTimer = engageTimerObservable(period: 1).subscribe()
-            standardPingsTimer = standardPingsTimerObservable(startSeconds: 15, period: 15, data: data).subscribe()
+            setPingTimer(data: data)
         }
         
         let parameters = getParameters(eventType: .ping, data: data)
@@ -119,8 +118,13 @@ public class Mirror {
         Observable<Int>.timer(.seconds(startSeconds), period: .seconds(period), scheduler: scheduler)
             .do(onNext: { [weak self] _ in
                 self?.sequenceNumber += 1
-                self?.sendPing(data: data, isForcePings: true)
+                self?.sendPing(data: data, isNewPings: false, isForcePings: false)
             })
+    }
+    
+    internal func setPingTimer(data: TrackData) {
+        engageTimer = engageTimerObservable(period: 1).subscribe()
+        standardPingsTimer = standardPingsTimerObservable(startSeconds: 15, period: 15, data: data).subscribe()
     }
     
     // observable for enter background
@@ -137,25 +141,18 @@ public class Mirror {
         NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self, let lastPingData = self.lastPingData else { return }
-                self.sendPing(data: lastPingData, isForcePings: true)
+                self.sendPing(data: lastPingData, isNewPings: false, isForcePings: true)
                 guard self.engagedTime < self.maximumPingInterval else { return }
-                self.engageTimer = self.engageTimerObservable(period: 1).subscribe()
-                self.standardPingsTimer = self.standardPingsTimerObservable(startSeconds: 15, period: 15, data: lastPingData).subscribe()
+                self.setPingTimer(data: lastPingData)
             })
     }
     
     // stop ping
-    public func stopPing() {
-        stopStandardPings(resetData: true)
-    }
-    
     internal func stopStandardPings(resetData: Bool = false) {
-        guard standardPingsTimer != nil || engageTimer != nil else { return }
-        standardPingsTimer?.dispose()
-        standardPingsTimer = nil
         engageTimer?.dispose()
         engageTimer = nil
-        logger.debug("[Track-Mirror] stop ping success")
+        standardPingsTimer?.dispose()
+        standardPingsTimer = nil
         if resetData {
             lastPingData = nil
         }
