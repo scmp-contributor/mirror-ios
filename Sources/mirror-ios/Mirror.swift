@@ -203,6 +203,8 @@ extension Mirror {
             dictionary["pt"] = pageTitle
         }
         
+        dictionary["pi"] = data.pageID
+        
         dictionary["v"] = agentVersion
         
         return dictionary

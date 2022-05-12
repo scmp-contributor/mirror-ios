@@ -19,11 +19,13 @@ public struct TrackData {
         self.pageTitle = pageTitle
     }
     /// - Parameter p: The clean URL path without query strings. (Usually from canonical URL)
-    public var path: String
+    private (set) var path: String
     /// - Parameter s: The page section of the article
-    public var section: String? = nil
+    private (set) var section: String? = nil
     /// - Parameter a: The page authors of the article
-    public var authors: String? = nil
+    private (set) var authors: String? = nil
     /// - Parameter pt: The page title
-    public var pageTitle: String? = nil
+    private (set) var pageTitle: String? = nil
+    /// - Parameter pi: The page session ID for correlating browsing behaviors under a single page. Generated on client side and store locally. 21 chars length by NanoID.
+    public let pageID: String = NanoID.new()
 }
