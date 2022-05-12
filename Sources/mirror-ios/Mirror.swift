@@ -192,7 +192,7 @@ extension Mirror {
         dictionary["sq"] = sequenceNumber
         
         if let section = data.section {
-            dictionary["s"] = section
+            dictionary["s"] = "articles only, \(section)"
         }
         
         if let authors = data.authors {

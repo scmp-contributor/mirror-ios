@@ -37,7 +37,7 @@ class ViewController: UIViewController {
     
     func resetDefault() {
         pathTextField.text = "/news/asia"
-        sectionTextField.text = "articles only, News, Hong Kong, Health & Environment"
+        sectionTextField.text = "News, Hong Kong, Health & Environment"
         authorsTextField.text = "Keung To, Anson Lo"
         pageTitleTextField.text = "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post"
     }
