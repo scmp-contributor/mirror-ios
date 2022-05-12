@@ -31,7 +31,7 @@ public class Mirror {
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
     /// - Parameter v: Agent version
-    internal let agentVersion: String = "0.0.1"
+    internal let agentVersion: String = "mi-0.0.1"
     
     // MARK: - Constants & Variables
     internal let scheduler: SchedulerType
