@@ -30,7 +30,7 @@ public class Mirror {
     internal var sequenceNumber: Int = 1
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
-    /// - Parameter v: Agent version
+    /// - Parameter v: Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
     internal let agentVersion: String = "mi-0.0.1"
     
     // MARK: - Constants & Variables
