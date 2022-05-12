@@ -11,12 +11,21 @@
         }
       },
       {
-        "package": "RxOptional",
-        "repositoryURL": "https://github.com/RxSwiftCommunity/RxOptional",
+        "package": "OHHTTPStubs",
+        "repositoryURL": "https://github.com/AliSoftware/OHHTTPStubs.git",
         "state": {
           "branch": null,
-          "revision": "f116ec9c727a76e92fabc1724bb7f57e4772402f",
-          "version": "5.0.4"
+          "revision": "12f19662426d0434d6c330c6974d53e2eb10ecd9",
+          "version": "9.1.0"
+        }
+      },
+      {
+        "package": "RxAlamofire",
+        "repositoryURL": "https://github.com/RxSwiftCommunity/RxAlamofire.git",
+        "state": {
+          "branch": null,
+          "revision": "9535b58695b91fb67f56d58d6fd0c76462d7743a",
+          "version": "6.1.2"
         }
       },
       {
