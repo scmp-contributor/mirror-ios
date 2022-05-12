@@ -11,16 +11,15 @@ public enum Environment {
     case uat
     case prod
     
-    internal var apiUrl: String {
-        let environment = self == .uat ? "uat-" : ""
-        return "https://\(environment)mirror.i-scmp.com"
+    internal var baseUrl: String {
+        self == .uat ? Constants.mirrorBaseUrlUat : Constants.mirrorBaseUrlProd
     }
     
     internal var pingUrl: String {
-        apiUrl + "/ping"
+        baseUrl + "/ping"
     }
     
     internal var clickUrl: String {
-        apiUrl + "/ping"
+        baseUrl + "/ping"
     }
 }

@@ -31,12 +31,12 @@ public class Mirror {
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
     /// - Parameter v: Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
-    internal let agentVersion: String = "mi-0.0.1"
+    internal let agentVersion: String = Constants.agentVersion
     
     // MARK: - Constants & Variables
     internal let scheduler: SchedulerType
     internal let disposeBag = DisposeBag()
-    internal let maximumPingInterval = 1005
+    internal let maximumPingInterval = Constants.maximumPingInterval
     internal var engageTimer: Disposable?
     internal var standardPingsTimer: Disposable?
     internal var lastPingData: TrackData?
@@ -75,7 +75,7 @@ public class Mirror {
     // MARK: - Send Mirror Event
     internal func sendMirror(eventType: EventType, parameters: [String: Any]) -> Observable<HTTPURLResponse> {
         let url = eventType.getUrl(environment)
-        return RxAlamofire.requestResponse(.get, url, parameters: parameters)
+        return RxAlamofire.requestResponse(.get, url, parameters: parameters, headers: ["User-Agent": Constants.userAgent])
     }
     
     // MARK: - Ping
