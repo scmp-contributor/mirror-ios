@@ -198,13 +198,6 @@ extension Mirror {
             dictionary["pt"] = pageTitle
         }
         
-        if let internalReferrer = data.internalReferrer {
-            dictionary["ir"] = internalReferrer
-        }
-        
-        if let externalReferrer = data.externalReferrer {
-            dictionary["er"] = externalReferrer
-        }
         dictionary["v"] = agentVersion
         
         return dictionary

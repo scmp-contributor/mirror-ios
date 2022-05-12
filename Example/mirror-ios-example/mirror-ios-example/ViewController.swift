@@ -14,8 +14,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var sectionTextField: UITextField!
     @IBOutlet weak var authorsTextField: UITextField!
     @IBOutlet weak var pageTitleTextField: UITextField!
-    @IBOutlet weak var internalReferrerTextField: UITextField!
-    @IBOutlet weak var externalReferrerTextField: UITextField!
     
     let mirror = Mirror(environment: .uat)
     
@@ -24,14 +22,10 @@ class ViewController: UIViewController {
         let section = (sectionTextField.text?.isEmpty ?? true) ? nil : sectionTextField.text
         let authors = (authorsTextField.text?.isEmpty ?? true) ? nil : authorsTextField.text
         let pageTitle = (pageTitleTextField.text?.isEmpty ?? true) ? nil : pageTitleTextField.text
-        let internalReferrer = (internalReferrerTextField.text?.isEmpty ?? true) ? nil : internalReferrerTextField.text
-        let externalReferrer = (externalReferrerTextField.text?.isEmpty ?? true) ? nil : externalReferrerTextField.text
         let data = TrackData(path: path,
                              section: section,
                              authors: authors,
-                             pageTitle: pageTitle,
-                             internalReferrer: internalReferrer,
-                             externalReferrer: externalReferrer)
+                             pageTitle: pageTitle)
         return data
     }
 
@@ -46,8 +40,6 @@ class ViewController: UIViewController {
         sectionTextField.text = "articles only, News, Hong Kong, Health & Environment"
         authorsTextField.text = "Keung To, Anson Lo"
         pageTitleTextField.text = "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post"
-        internalReferrerTextField.text = nil
-        externalReferrerTextField.text = nil
     }
     
     @IBAction func pingButton(_ sender: UIButton) {

@@ -17,7 +17,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="jLW-E2-DGK">
-                                <rect key="frame" x="146" y="427" width="122.5" height="125"/>
+                                <rect key="frame" x="146" y="329" width="122.5" height="125"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uPh-Rv-ESf">
                                         <rect key="frame" x="0.0" y="0.0" width="122.5" height="31"/>
@@ -46,7 +46,7 @@
                                 </subviews>
                             </stackView>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="top" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="1oG-eD-Nul">
-                                <rect key="frame" x="16" y="94" width="382" height="289"/>
+                                <rect key="frame" x="16" y="94" width="382" height="191"/>
                                 <subviews>
                                     <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="path" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="lN4-bw-uWG">
                                         <rect key="frame" x="0.0" y="0.0" width="382" height="44"/>
@@ -71,23 +71,11 @@
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                         <textInputTraits key="textInputTraits"/>
                                     </textField>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="internalReferrer" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="v2N-vm-Z6q">
-                                        <rect key="frame" x="0.0" y="196" width="382" height="44"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="externalReferrer" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="QlY-8P-klw">
-                                        <rect key="frame" x="0.0" y="245" width="382" height="44"/>
-                                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
-                                        <textInputTraits key="textInputTraits"/>
-                                    </textField>
                                 </subviews>
                                 <constraints>
                                     <constraint firstItem="zn6-Fr-TYg" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="0mr-vC-xAk"/>
-                                    <constraint firstItem="v2N-vm-Z6q" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="5wg-BJ-VDN"/>
                                     <constraint firstItem="dd3-cn-FxU" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="DF4-OZ-ka6"/>
                                     <constraint firstItem="lN4-bw-uWG" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="SAh-Ie-0KK"/>
-                                    <constraint firstItem="QlY-8P-klw" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="p1F-V3-zAZ"/>
                                     <constraint firstItem="uqQ-HF-QXD" firstAttribute="width" secondItem="1oG-eD-Nul" secondAttribute="width" id="vx6-tm-Aax"/>
                                 </constraints>
                             </stackView>
@@ -104,8 +92,6 @@
                     </view>
                     <connections>
                         <outlet property="authorsTextField" destination="uqQ-HF-QXD" id="jlQ-sJ-mSH"/>
-                        <outlet property="externalReferrerTextField" destination="QlY-8P-klw" id="9zw-Hy-rYU"/>
-                        <outlet property="internalReferrerTextField" destination="v2N-vm-Z6q" id="ehz-ts-43C"/>
                         <outlet property="pageTitleTextField" destination="dd3-cn-FxU" id="hVd-vy-VwN"/>
                         <outlet property="pathTextField" destination="lN4-bw-uWG" id="MhB-8e-ebM"/>
                         <outlet property="sectionTextField" destination="zn6-Fr-TYg" id="ehy-n3-50d"/>
