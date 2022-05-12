@@ -19,7 +19,7 @@ public class Mirror {
     /// - Parameter k: The unique organization ID (uuid) from Mirror service. Each organization can hold multiple domains. Please get this value from Mirror team.
     internal let organizationID: String
     /// - Parameter d: The domain address that we implement the tracking. (Usually from canonical URL)
-    internal let domain: String
+    internal var domain: String
     /// - Parameter u: The unique ID for each visitor, generated on client side and store locally. 21 chars length by NanoID.
     internal let uuid: String = Preferences.sharedInstance.uuid
     /// - Parameter vt: The visitor type.
@@ -44,7 +44,7 @@ public class Mirror {
     // MARK: - init
     public init(environment: Environment = .prod,
                 organizationID: String = "1",
-                domain: String = "scmp.com",
+                domain: String,
                 visitorType: VisitorType = .guest,
                 scheduler: SchedulerType = SerialDispatchQueueScheduler(qos: .default)) {
         self.environment = environment
@@ -60,6 +60,11 @@ public class Mirror {
     // MARK: - Update Environment
     public func updateEnvironment(_ environment: Environment) {
         self.environment = environment
+    }
+    
+    // MARK: - Update Domain
+    public func updateDomain(_ domain: String) {
+        self.domain = domain
     }
     
     // MARK: - Update Visitor Type

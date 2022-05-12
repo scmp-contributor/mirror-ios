@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var authorsTextField: UITextField!
     @IBOutlet weak var pageTitleTextField: UITextField!
     
-    let mirror = Mirror(environment: .uat)
+    let mirror = Mirror(environment: .uat, domain: "scmp.com")
     
     var trackData: TrackData? {
         guard let path = pathTextField.text, !path.isEmpty else { return nil }
