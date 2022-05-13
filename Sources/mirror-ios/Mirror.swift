@@ -13,7 +13,7 @@ import UIKit
 import SwiftyBeaver
 
 public protocol MirrorDelegate: AnyObject {
-    func changeView(completion: @escaping () -> ())
+    func changeView(completion: @escaping () -> Void)
 }
 
 public class Mirror {
@@ -99,11 +99,14 @@ public class Mirror {
     // MARK: - Ping
     
     /// - Parameter data: The TrackData for mirror parameters
-    public func ping(data: TrackData) {
+    public func ping(data: TrackData?) {
         stopStandardPings()
         sequenceNumber = 0
         engagedTime = 0
-        standardPingsTimer = pingTimerObservable(data: data).subscribe()
+        lastPingData = nil
+        if let data = data {
+            standardPingsTimer = pingTimerObservable(data: data).subscribe()
+        }
     }
     
     internal func sendPing(data: TrackData) {
