@@ -11,6 +11,10 @@ import RxCocoa
 import RxAlamofire
 import UIKit
 
+public protocol MirrorDelegate: AnyObject {
+    func changeView(completion: @escaping () -> ())
+}
+
 public class Mirror {
     
     internal var environment: Environment
@@ -27,19 +31,30 @@ public class Mirror {
     /// - Parameter eg: The visitor engaged time on the page in seconds.
     internal var engagedTime = 0
     /// - Parameter sq: Sequence number of ping events within same session
-    internal var sequenceNumber: Int = 1
+    internal var sequenceNumber: Int = 0
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
     /// - Parameter v: Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
     internal let agentVersion: String = Constants.agentVersion
     
     // MARK: - Constants & Variables
+    
+    public weak var delegate: MirrorDelegate? {
+        didSet {
+            delegate?.changeView { [weak self] in
+                self?.stopStandardPings()
+            }
+        }
+    }
+    
     internal let scheduler: SchedulerType
     internal let disposeBag = DisposeBag()
-    internal let maximumPingInterval = Constants.maximumPingInterval
-    internal var engageTimer: Disposable?
+    
     internal var standardPingsTimer: Disposable?
     internal var lastPingData: TrackData?
+    internal var latestPingEngageTime: Int = 0
+    
+    internal var didEnterBackgroundRelay = BehaviorRelay<Bool>(value: false)
     
     // MARK: - init
     public init(environment: Environment = .prod,
@@ -82,54 +97,42 @@ public class Mirror {
     
     /// - Parameter data: The TrackData for mirror parameters
     public func ping(data: TrackData) {
-        sendPing(data: data)
+        stopStandardPings()
+        sequenceNumber = 0
+        engagedTime = 0
+        standardPingsTimer = pingTimerObservable(data: data).subscribe()
     }
     
-    internal func sendPing(data: TrackData, isNewPings: Bool = true,  isForcePings: Bool = false) {
-        
-        if isNewPings {
-            stopStandardPings(resetData: true)
-            sequenceNumber = 1
-            engagedTime = 0
-            setPingTimer(data: data)
-        }
-        
+    internal func sendPing(data: TrackData) {
+        sequenceNumber += 1
         let parameters = getParameters(eventType: .ping, data: data)
+        latestPingEngageTime = engagedTime
         
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
-                let pingStr = isForcePings ? "force pings" : "standard ping"
-                logger.debug("[Track-Mirror] \(pingStr) success, parameters: \(parameters), response: \(response.statusCode)")
+                logger.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
                 self?.lastPingData = data
             }).disposed(by: disposeBag)
     }
     
     // Timer for engage time
-    internal func engageTimerObservable(period: Int) -> Observable<Int> {
-        Observable<Int>.interval(.seconds(period), scheduler: scheduler)
-            .take(until: { [weak self] _ in
-                guard let self = self else { return true }
-                return self.engagedTime >= self.maximumPingInterval
-            }, behavior: .exclusive)
-            .do(onNext: { [weak self] _ in
-                self?.engagedTime += 1
-            }, onCompleted: { [weak self] in
-                self?.stopStandardPings()
+    internal func pingTimerObservable(data: TrackData) -> Observable<Int> {
+        let backgroundPingIntervals = [30, 45, 75, 165, 1005]
+        return Observable<Int>.timer(.seconds(0), period: .seconds(1), scheduler: scheduler)
+            .take(until: { $0 == Constants.maximumPingInterval }, behavior: .inclusive)
+            .do(onNext: { [weak self] time in
+                guard let self = self else { return }
+                self.engagedTime = time
+                if self.didEnterBackgroundRelay.value {
+                    if backgroundPingIntervals.contains(time) {
+                        self.sendPing(data: data)
+                    }
+                } else {
+                    if (time - self.latestPingEngageTime) % 15 == 0 {
+                        self.sendPing(data: data)
+                    }
+                }
             })
-    }
-    
-    // Timer for standard pings
-    internal func standardPingsTimerObservable(startSeconds: Int, period: Int, data: TrackData) -> Observable<Int> {
-        Observable<Int>.timer(.seconds(startSeconds), period: .seconds(period), scheduler: scheduler)
-            .do(onNext: { [weak self] _ in
-                self?.sequenceNumber += 1
-                self?.sendPing(data: data, isNewPings: false, isForcePings: false)
-            })
-    }
-    
-    internal func setPingTimer(data: TrackData) {
-        engageTimer = engageTimerObservable(period: 1).subscribe()
-        standardPingsTimer = standardPingsTimerObservable(startSeconds: 15, period: 15, data: data).subscribe()
     }
     
     // observable for enter background
@@ -137,7 +140,7 @@ public class Mirror {
         NotificationCenter.default.rx.notification(UIApplication.didEnterBackgroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self else { return }
-                self.stopStandardPings()
+                self.didEnterBackgroundRelay.accept(true)
             })
     }
     
@@ -145,22 +148,17 @@ public class Mirror {
     internal func observeEnterForeground() -> Observable<Notification> {
         NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
             .do(onNext: { [weak self] _ in
-                guard let self = self, let lastPingData = self.lastPingData else { return }
-                self.sendPing(data: lastPingData, isNewPings: false, isForcePings: true)
-                guard self.engagedTime < self.maximumPingInterval else { return }
-                self.setPingTimer(data: lastPingData)
+                guard let self = self else { return }
+                self.didEnterBackgroundRelay.accept(false)
+                guard let lastPingData = self.lastPingData else { return }
+                self.sendPing(data: lastPingData)
             })
     }
     
     // stop ping
-    internal func stopStandardPings(resetData: Bool = false) {
-        engageTimer?.dispose()
-        engageTimer = nil
+    internal func stopStandardPings() {
         standardPingsTimer?.dispose()
         standardPingsTimer = nil
-        if resetData {
-            lastPingData = nil
-        }
     }
     
     // MARK: - Click

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E96D7255282E02510007EFF1 /* MirrorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E96D7254282E02510007EFF1 /* MirrorManager.swift */; };
 		E9D6A301281130CF00790B96 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6A300281130CF00790B96 /* AppDelegate.swift */; };
 		E9D6A303281130CF00790B96 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6A302281130CF00790B96 /* SceneDelegate.swift */; };
 		E9D6A305281130CF00790B96 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D6A304281130CF00790B96 /* ViewController.swift */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E96D7254282E02510007EFF1 /* MirrorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirrorManager.swift; sourceTree = "<group>"; };
 		E9D6A2FD281130CF00790B96 /* mirror-ios-example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "mirror-ios-example.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9D6A300281130CF00790B96 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		E9D6A302281130CF00790B96 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 				E9D6A300281130CF00790B96 /* AppDelegate.swift */,
 				E9D6A302281130CF00790B96 /* SceneDelegate.swift */,
 				E9D6A304281130CF00790B96 /* ViewController.swift */,
+				E96D7254282E02510007EFF1 /* MirrorManager.swift */,
 				E9D6A306281130CF00790B96 /* Main.storyboard */,
 				E9D6A309281130D000790B96 /* Assets.xcassets */,
 				E9D6A30B281130D000790B96 /* LaunchScreen.storyboard */,
@@ -153,6 +156,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E96D7255282E02510007EFF1 /* MirrorManager.swift in Sources */,
 				E9D6A305281130CF00790B96 /* ViewController.swift in Sources */,
 				E9D6A301281130CF00790B96 /* AppDelegate.swift in Sources */,
 				E9D6A303281130CF00790B96 /* SceneDelegate.swift in Sources */,

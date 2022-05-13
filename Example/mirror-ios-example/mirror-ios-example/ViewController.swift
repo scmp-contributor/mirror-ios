@@ -6,7 +6,10 @@
 //
 
 import UIKit
+import RxCocoa
 import mirror_ios
+
+let currentViewControllerRelay: BehaviorRelay<UIViewController?> = BehaviorRelay<UIViewController?>(value: nil)
 
 class ViewController: UIViewController {
     
@@ -15,7 +18,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var authorsTextField: UITextField!
     @IBOutlet weak var pageTitleTextField: UITextField!
     
-    let mirror = Mirror(environment: .uat, domain: "scmp.com")
+    let mirrorManager = MirrorManager()
     
     var trackData: TrackData? {
         guard let path = pathTextField.text, !path.isEmpty else { return nil }
@@ -33,6 +36,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         resetDefault()
+        currentViewControllerRelay.accept(self)
     }
     
     func resetDefault() {
@@ -47,7 +51,7 @@ class ViewController: UIViewController {
             print("Path is necessary")
             return
         }
-        mirror.ping(data: trackData)
+        mirrorManager.ping(data: trackData)
     }
     
     @IBAction func clickButton(_ sender: UIButton) {
@@ -55,11 +59,16 @@ class ViewController: UIViewController {
             print("Path is necessary")
             return
         }
-        mirror.click(data: trackData)
+        mirrorManager.click(data: trackData)
     }
     
     @IBAction func resetButton(_ sender: UIButton) {
         resetDefault()
+    }
+    
+    @IBAction func simulateChangeViewButton(_ sender: UIButton) {
+        let vc = ViewController()
+        currentViewControllerRelay.accept(vc)
     }
 }
 

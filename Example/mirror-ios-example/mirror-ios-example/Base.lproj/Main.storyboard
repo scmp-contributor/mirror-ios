@@ -17,10 +17,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="jLW-E2-DGK">
-                                <rect key="frame" x="146" y="329" width="122.5" height="125"/>
+                                <rect key="frame" x="125.5" y="329" width="163" height="172"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="uPh-Rv-ESf">
-                                        <rect key="frame" x="0.0" y="0.0" width="122.5" height="31"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="163" height="31"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="ping"/>
                                         <connections>
@@ -28,7 +28,7 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gUG-if-fni">
-                                        <rect key="frame" x="0.0" y="47" width="122.5" height="31"/>
+                                        <rect key="frame" x="0.0" y="47" width="163" height="31"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="click"/>
                                         <connections>
@@ -36,11 +36,19 @@
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="J2o-zR-gJ9">
-                                        <rect key="frame" x="0.0" y="94" width="122.5" height="31"/>
+                                        <rect key="frame" x="0.0" y="94" width="163" height="31"/>
                                         <state key="normal" title="Button"/>
                                         <buttonConfiguration key="configuration" style="plain" title="reset to default"/>
                                         <connections>
                                             <action selector="resetButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="M6a-Ul-Dr3"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="E37-5q-UxV">
+                                        <rect key="frame" x="0.0" y="141" width="163" height="31"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="plain" title="simulate change view"/>
+                                        <connections>
+                                            <action selector="simulateChangeViewButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NFo-eV-Ykq"/>
                                         </connections>
                                     </button>
                                 </subviews>

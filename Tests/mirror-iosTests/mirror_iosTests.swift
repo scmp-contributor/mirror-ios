@@ -3,6 +3,7 @@ import RxSwift
 import RxTest
 import RxBlocking
 @testable import mirror_ios
+import RxRelay
 
 final class mirror_iosTests: XCTestCase {
     
@@ -11,7 +12,7 @@ final class mirror_iosTests: XCTestCase {
     var disposeBag: DisposeBag!
     
     override func setUp() {
-        mirror = Mirror(environment: .uat)
+        mirror = Mirror(environment: .uat, domain: "scmp.com")
         scheduler = TestScheduler(initialClock: 0)
         disposeBag = DisposeBag()
     }
@@ -23,22 +24,30 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertNotNil(mirror.uuid)
         XCTAssertNotNil(mirror.visitorType)
         XCTAssertEqual(mirror.engagedTime, 0)
-        XCTAssertEqual(mirror.sequenceNumber, 1)
+        XCTAssertEqual(mirror.sequenceNumber, 0)
         XCTAssertEqual(mirror.trackingFlag, TrackingFlag.true)
         XCTAssertNotNil(mirror.agentVersion)
     }
     
     // MARK: - Test Update nvironment
     func testUpdateEnvironment() {
-        mirror = Mirror(environment: .uat)
+        mirror = Mirror(environment: .uat, domain: "scmp.com")
         XCTAssertEqual(mirror.environment, .uat)
         mirror.updateEnvironment(.prod)
         XCTAssertEqual(mirror.environment, .prod)
     }
     
+    // MARK: - Test Update Domain
+    func testUpdateDomain() {
+        mirror = Mirror(environment: .uat, domain: "scmp.com")
+        XCTAssertEqual(mirror.domain, "scmp.com")
+        mirror.updateDomain("test.com")
+        XCTAssertEqual(mirror.domain, "test.com")
+    }
+    
     // MARK: - Test Update Visitor Type
     func testUpdateVisitorType() {
-        mirror = Mirror(environment: .uat, visitorType: .guest)
+        mirror = Mirror(environment: .uat, domain: "scmp.com", visitorType: .guest)
         XCTAssertEqual(mirror.visitorType, .guest)
         mirror.updateVisitorType(.unclassified)
         XCTAssertEqual(mirror.visitorType, .unclassified)
@@ -46,34 +55,57 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(mirror.visitorType, .registered)
         mirror.updateVisitorType(.subscribed)
         XCTAssertEqual(mirror.visitorType, .subscribed)
+    }
+    
+    // MARK: - Test Delegate
+    func testDelegate() throws {
         
+        class MirrorManager: MirrorDelegate {
+            
+            let changeViewRelay: PublishRelay<Void> = PublishRelay()
+            let disposeBag = DisposeBag()
+            
+            func changeView(completion: @escaping () -> ()) {
+                changeViewRelay.subscribe(onNext: {
+                    completion()
+                }).disposed(by: disposeBag)
+            }
+        }
+        
+        let mirrorManager = MirrorManager()
+        mirror.delegate = mirrorManager
+        
+        XCTAssertNil(mirror.standardPingsTimer)
+        let data = TrackData(path: "/news/asia")
+        mirror.ping(data: data)
+        XCTAssertNotNil(mirror.standardPingsTimer)
+        mirrorManager.changeViewRelay.accept(())
+        XCTAssertNil(mirror.standardPingsTimer)
     }
     
     // MARK: - Test API URL
     func testUatApiURL() {
-        mirror = Mirror(environment: .uat)
+        mirror = Mirror(environment: .uat, domain: "scmp.com")
         let apiUrl = "https://uat-mirror.i-scmp.com"
-        XCTAssertEqual(mirror.environment.apiUrl, apiUrl)
+        XCTAssertEqual(mirror.environment, .uat)
         XCTAssertEqual(mirror.environment.pingUrl, apiUrl + "/ping")
         XCTAssertEqual(mirror.environment.clickUrl, apiUrl + "/ping")
     }
     
     func testProdApiURL() {
-        mirror = Mirror(environment: .prod)
+        mirror = Mirror(environment: .prod, domain: "scmp.com")
         let apiUrl = "https://mirror.i-scmp.com"
-        XCTAssertEqual(mirror.environment.apiUrl, apiUrl)
+        XCTAssertEqual(mirror.environment, .prod)
         XCTAssertEqual(mirror.environment.pingUrl, apiUrl + "/ping")
         XCTAssertEqual(mirror.environment.clickUrl, apiUrl + "/ping")
     }
     
     // MARK: - Test Ping
-    func testFirstStandardPings() throws {
+    func testPing() throws {
         let data = TrackData(path: "/news/asia")
-        mirror.sendPing(data: data)
-        XCTAssertEqual(mirror.sequenceNumber, 1)
+        mirror.ping(data: data)
+        XCTAssertEqual(mirror.sequenceNumber, 0)
         XCTAssertEqual(mirror.engagedTime, 0)
-        
-        mirror.sendPing(data: data)
         XCTAssertNotNil(mirror.standardPingsTimer)
     }
     
@@ -86,34 +118,24 @@ final class mirror_iosTests: XCTestCase {
     func testStopPing() throws {
         mirror.stopStandardPings()
         XCTAssertNil(mirror.standardPingsTimer)
-        XCTAssertNil(mirror.engageTimer)
         
         let data = TrackData(path: "/news/asia")
         
-        mirror.sendPing(data: data)
+        mirror.ping(data: data)
         XCTAssertNotNil(mirror.standardPingsTimer)
         mirror.stopStandardPings()
         XCTAssertNil(mirror.standardPingsTimer)
-        XCTAssertNil(mirror.engageTimer)
-        
-        mirror.sendPing(data: data)
-        XCTAssertNotNil(mirror.standardPingsTimer)
-        mirror.stopStandardPings(resetData: true)
-        XCTAssertNil(mirror.standardPingsTimer)
-        XCTAssertNil(mirror.engageTimer)
-        XCTAssertNil(mirror.lastPingData)
     }
     
     func testPingParams() {
         mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest)
         let data = TrackData(path: "/news/asia",
-                             section: "articles only, News, Hong Kong, Health & Environment",
+                             section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
-                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post",
-                             internalReferrer: "https://www.scmp.com/news/asia/australasia",
-                             externalReferrer: "https://www.facebook.com/")
+                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
+        mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .ping, data: data)
-        XCTAssertEqual(parameters.keys.count, 15)
+        XCTAssertEqual(parameters.keys.count, 14)
         XCTAssertEqual(parameters["k"] as? String, "1")
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
@@ -126,21 +148,19 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["s"] as? String, "articles only, News, Hong Kong, Health & Environment")
         XCTAssertEqual(parameters["a"] as? String, "Keung To, Anson Lo")
         XCTAssertEqual(parameters["pt"] as? String, "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
-        XCTAssertEqual(parameters["ir"] as? String, "https://www.scmp.com/news/asia/australasia")
-        XCTAssertEqual(parameters["er"] as? String, "https://www.facebook.com/")
+        XCTAssertEqual(parameters["pi"] as? String, data.pageID)
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
     }
     
     func testClickParams() {
         mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest)
         let data = TrackData(path: "/news/asia",
-                             section: "articles only, News, Hong Kong, Health & Environment",
+                             section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
-                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post",
-                             internalReferrer: "https://www.scmp.com/news/asia/australasia",
-                             externalReferrer: "https://www.facebook.com/")
+                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
+        mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .click, data: data)
-        XCTAssertEqual(parameters.keys.count, 15)
+        XCTAssertEqual(parameters.keys.count, 14)
         XCTAssertEqual(parameters["k"] as? String, "1")
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
@@ -153,62 +173,21 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["s"] as? String, "articles only, News, Hong Kong, Health & Environment")
         XCTAssertEqual(parameters["a"] as? String, "Keung To, Anson Lo")
         XCTAssertEqual(parameters["pt"] as? String, "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
-        XCTAssertEqual(parameters["ir"] as? String, "https://www.scmp.com/news/asia/australasia")
-        XCTAssertEqual(parameters["er"] as? String, "https://www.facebook.com/")
+        XCTAssertEqual(parameters["pi"] as? String, data.pageID)
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
     }
     
-    func testEngageTimer() {
-        let mirror = Mirror(environment: .uat, scheduler: scheduler)
-        XCTAssertEqual(mirror.engagedTime, 0)
-        let res = scheduler.start(created: 0, subscribed: 0, disposed: 5) {
-            mirror.engageTimerObservable(period: 1)
-        }
-        XCTAssertEqual(res.events, [
-            .next(1, 0),
-            .next(2, 1),
-            .next(3, 2),
-            .next(4, 3)
-        ])
-        XCTAssertEqual(mirror.engagedTime, 4)
-    }
-    
     func testStandardPingsTimer() {
-        let mirror = Mirror(environment: .uat, scheduler: scheduler)
+        let scheduler = TestScheduler(initialClock: 0, resolution: 1, simulateProcessingDelay: false)
+        let mirror = Mirror(environment: .uat, domain: "scmp.com", scheduler: scheduler)
         let data = TrackData(path: "/news/asia")
-        XCTAssertEqual(mirror.sequenceNumber, 1)
-        let res = scheduler.start(created: 0, subscribed: 0, disposed: 91) {
-            mirror.standardPingsTimerObservable(startSeconds: 15, period: 15, data: data)
-        }
-        XCTAssertEqual(res.events, [
-            .next(15, 0),
-            .next(30, 1),
-            .next(45, 2),
-            .next(60, 3),
-            .next(75, 4),
-            .next(90, 5)
-        ])
-        XCTAssertEqual(mirror.sequenceNumber, 7)
-    }
-    
-    func testDidEnterBackgroundNotification() {
-        let mirror = Mirror(environment: .uat, scheduler: scheduler)
-        
-        let data = TrackData(path: "/news/asia")
-
-        mirror.ping(data: data)
-
-        XCTAssertNotNil(mirror.standardPingsTimer)
-        XCTAssertNotNil(mirror.engageTimer)
-        
-        let res = scheduler.start {
-            mirror.observeEnterBackground()
+        XCTAssertEqual(mirror.sequenceNumber, 0)
+        let _ = scheduler.start(created: 0, subscribed: 0, disposed: 16) {
+            mirror.pingTimerObservable(data: data)
         }
         
-        res.onNext(Notification(name: UIApplication.didEnterBackgroundNotification, object: nil, userInfo: nil))
-        
-        XCTAssertNil(mirror.standardPingsTimer)
-        XCTAssertNil(mirror.engageTimer)
+        XCTAssertEqual(mirror.engagedTime, 15)
+        XCTAssertEqual(mirror.sequenceNumber, 2)
     }
     
     // MARK: - Test Click
