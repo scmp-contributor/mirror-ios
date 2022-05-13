@@ -10,6 +10,7 @@ import RxSwift
 import RxCocoa
 import RxAlamofire
 import UIKit
+import SwiftyBeaver
 
 public protocol MirrorDelegate: AnyObject {
     func changeView(completion: @escaping () -> ())
@@ -46,6 +47,8 @@ public class Mirror {
             }
         }
     }
+    
+    public var enableTimerLog = false
     
     internal let scheduler: SchedulerType
     internal let disposeBag = DisposeBag()
@@ -110,7 +113,7 @@ public class Mirror {
         
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
-                logger.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
+                mirrorLog.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
                 self?.lastPingData = data
             }).disposed(by: disposeBag)
     }
@@ -123,6 +126,11 @@ public class Mirror {
             .do(onNext: { [weak self] time in
                 guard let self = self else { return }
                 self.engagedTime = time
+                
+                if self.enableTimerLog {
+                    mirrorLog.debug("[Track-Mirror] time = \(time)")
+                }
+                
                 if self.didEnterBackgroundRelay.value {
                     if backgroundPingIntervals.contains(time) {
                         self.sendPing(data: data)
@@ -169,7 +177,7 @@ public class Mirror {
         
         sendMirror(eventType: .click, parameters: parameters)
             .subscribe(onNext: { response in
-                logger.debug("[Track-Mirror] click success, parameters: \(parameters), response: \(response.statusCode)")
+                mirrorLog.debug("[Track-Mirror] click success, parameters: \(parameters), response: \(response.statusCode)")
             }).disposed(by: disposeBag)
     }
 }

@@ -8,14 +8,14 @@
 import Foundation
 import SwiftyBeaver
 
-internal let logger: SwiftyBeaver.Type = {
+internal let mirrorLog: SwiftyBeaver.Type = {
   
   let sbLogger = SwiftyBeaver.self
   
   #if DEBUG
     let console = ConsoleDestination()
     console.useNSLog = true
-    console.minLevel = .debug // just log .Info, .Warning & .Error
+    console.minLevel = .debug
     sbLogger.addDestination(console) // add to SwiftyBeaver
   #endif
   
