@@ -35,9 +35,22 @@ public class Mirror: NSObject {
     internal var sequenceNumber: Int = 0
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
+    /// - Parameter ff: The additional duration added to the event to extend the page browing session
+    internal var ff: Int {
+        if pingTimeInterval == 0 {
+            return 45
+        } else {
+            if pingTimeInterval * 2 >= 270 {
+                return 270
+            } else {
+                return pingTimeInterval * 2
+            }
+        }
+    }
     /// - Parameter v: Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
     internal let agentVersion: String = Constants.agentVersion
     
+    internal var pingTimeInterval = 0
     // MARK: - Constants & Variables
     
     public weak var delegate: MirrorDelegate? {
@@ -85,10 +98,6 @@ public class Mirror: NSObject {
         
         observeEnterBackground().subscribe().disposed(by: disposeBag)
         observeEnterForeground().subscribe().disposed(by: disposeBag)
-        
-        inactiveRelay.distinctUntilChanged().asObservable().subscribe(onNext: {
-            print("inactive = \($0)")
-        }).disposed(by: disposeBag)
     }
     
     func addGesture() {
@@ -154,6 +163,7 @@ public class Mirror: NSObject {
             .do(onNext: { [weak self] time in
                 guard let self = self else { return }
                 
+                self.pingTimeInterval = time
                 self.engagedTime = self.gestureRecongnizer.engageTime
                 
                 if self.enableTimerLog {
@@ -227,8 +237,6 @@ extension Mirror {
         dictionary["p"] = data.path.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         dictionary["u"] = uuid
         dictionary["vt"] = visitorType.rawValue
-        dictionary["et"] = eventType.rawValue
-        dictionary["nc"] = trackingFlag.rawValue
         dictionary["eg"] = engagedTime
         dictionary["sq"] = sequenceNumber
         
@@ -245,7 +253,9 @@ extension Mirror {
         }
         
         dictionary["pi"] = data.pageID
-        
+        dictionary["et"] = eventType.rawValue
+        dictionary["nc"] = trackingFlag.rawValue
+        dictionary["ff"] = ff
         dictionary["v"] = agentVersion
         
         return dictionary
