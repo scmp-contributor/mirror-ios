@@ -12,7 +12,7 @@ final class mirror_iosTests: XCTestCase {
     var disposeBag: DisposeBag!
     
     override func setUp() {
-        mirror = Mirror(environment: .uat, domain: "scmp.com")
+        mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow())
         scheduler = TestScheduler(initialClock: 0)
         disposeBag = DisposeBag()
     }
@@ -31,7 +31,7 @@ final class mirror_iosTests: XCTestCase {
     
     // MARK: - Test Update nvironment
     func testUpdateEnvironment() {
-        mirror = Mirror(environment: .uat, domain: "scmp.com")
+        mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow())
         XCTAssertEqual(mirror.environment, .uat)
         mirror.updateEnvironment(.prod)
         XCTAssertEqual(mirror.environment, .prod)
@@ -39,7 +39,7 @@ final class mirror_iosTests: XCTestCase {
     
     // MARK: - Test Update Domain
     func testUpdateDomain() {
-        mirror = Mirror(environment: .uat, domain: "scmp.com")
+        mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow())
         XCTAssertEqual(mirror.domain, "scmp.com")
         mirror.updateDomain("test.com")
         XCTAssertEqual(mirror.domain, "test.com")
@@ -47,7 +47,7 @@ final class mirror_iosTests: XCTestCase {
     
     // MARK: - Test Update Visitor Type
     func testUpdateVisitorType() {
-        mirror = Mirror(environment: .uat, domain: "scmp.com", visitorType: .guest)
+        mirror = Mirror(environment: .uat, domain: "scmp.com", visitorType: .guest, window: UIWindow())
         XCTAssertEqual(mirror.visitorType, .guest)
         mirror.updateVisitorType(.unclassified)
         XCTAssertEqual(mirror.visitorType, .unclassified)
@@ -85,7 +85,7 @@ final class mirror_iosTests: XCTestCase {
     
     // MARK: - Test API URL
     func testUatApiURL() {
-        mirror = Mirror(environment: .uat, domain: "scmp.com")
+        mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow())
         let apiUrl = "https://uat-mirror.i-scmp.com"
         XCTAssertEqual(mirror.environment, .uat)
         XCTAssertEqual(mirror.environment.pingUrl, apiUrl + "/ping")
@@ -93,7 +93,7 @@ final class mirror_iosTests: XCTestCase {
     }
     
     func testProdApiURL() {
-        mirror = Mirror(environment: .prod, domain: "scmp.com")
+        mirror = Mirror(environment: .prod, domain: "scmp.com", window: UIWindow())
         let apiUrl = "https://mirror.i-scmp.com"
         XCTAssertEqual(mirror.environment, .prod)
         XCTAssertEqual(mirror.environment.pingUrl, apiUrl + "/ping")
@@ -128,14 +128,14 @@ final class mirror_iosTests: XCTestCase {
     }
     
     func testPingParams() {
-        mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest)
+        mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest, window: UIWindow())
         let data = TrackData(path: "/news/asia",
                              section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
                              pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
         mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .ping, data: data)
-        XCTAssertEqual(parameters.keys.count, 14)
+        XCTAssertEqual(parameters.keys.count, 15)
         XCTAssertEqual(parameters["k"] as? String, "1")
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
@@ -149,24 +149,29 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["a"] as? String, "Keung To, Anson Lo")
         XCTAssertEqual(parameters["pt"] as? String, "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
         XCTAssertEqual(parameters["pi"] as? String, data.pageID)
+        XCTAssertEqual(parameters["ff"] as? Int, 45)
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
+        
+        mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest, window: UIWindow())
+        let anotherData = TrackData(path: "/news/asia")
+        let anotherParameters = mirror.getParameters(eventType: .click, data: anotherData)
+        XCTAssertEqual(anotherParameters["s"] as? String, "No Section")
+        XCTAssertEqual(anotherParameters["a"] as? String, "No Author")
     }
     
     func testClickParams() {
-        mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest)
+        mirror = Mirror(environment: .uat, organizationID: "1", domain: "scmp.com", visitorType: .guest, window: UIWindow())
         let data = TrackData(path: "/news/asia",
                              section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
                              pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
         mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .click, data: data)
-        XCTAssertEqual(parameters.keys.count, 14)
+        XCTAssertEqual(parameters.keys.count, 15)
         XCTAssertEqual(parameters["k"] as? String, "1")
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
         XCTAssertEqual(parameters["vt"] as? String, "gst")
-        XCTAssertEqual(parameters["et"] as? String, "click")
-        XCTAssertEqual(parameters["nc"] as? String, "true")
         XCTAssertEqual(parameters["p"] as? String, "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
         XCTAssertEqual(parameters["eg"] as? Int, 0)
         XCTAssertEqual(parameters["sq"] as? Int, 1)
@@ -174,19 +179,22 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["a"] as? String, "Keung To, Anson Lo")
         XCTAssertEqual(parameters["pt"] as? String, "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
         XCTAssertEqual(parameters["pi"] as? String, data.pageID)
+        XCTAssertEqual(parameters["et"] as? String, "click")
+        XCTAssertEqual(parameters["nc"] as? String, "true")
+        XCTAssertEqual(parameters["ff"] as? Int, 45)
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
     }
     
     func testStandardPingsTimer() {
         let scheduler = TestScheduler(initialClock: 0, resolution: 1, simulateProcessingDelay: false)
-        let mirror = Mirror(environment: .uat, domain: "scmp.com", scheduler: scheduler)
+        let mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow(), scheduler: scheduler)
         let data = TrackData(path: "/news/asia")
         XCTAssertEqual(mirror.sequenceNumber, 0)
         let _ = scheduler.start(created: 0, subscribed: 0, disposed: 16) {
             mirror.pingTimerObservable(data: data)
         }
         
-        XCTAssertEqual(mirror.engagedTime, 15)
+        XCTAssertEqual(mirror.engagedTime, 0)
         XCTAssertEqual(mirror.sequenceNumber, 2)
     }
     

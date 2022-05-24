@@ -242,11 +242,11 @@ extension Mirror {
         
         if let section = data.section {
             dictionary["s"] = "articles only, \(section)"
+        } else {
+            dictionary["s"] = "No Section"
         }
         
-        if let authors = data.authors {
-            dictionary["a"] = authors
-        }
+        dictionary["a"] = data.authors ?? "No Author"
         
         if let pageTitle = data.pageTitle, sequenceNumber == 1 {
             dictionary["pt"] = pageTitle
