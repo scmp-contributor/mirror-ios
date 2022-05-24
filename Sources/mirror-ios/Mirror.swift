@@ -30,14 +30,16 @@ public class Mirror: NSObject {
     /// - Parameter vt: The visitor type.
     internal var visitorType: VisitorType
     /// - Parameter eg: The visitor engaged time on the page in seconds.
-    internal var engagedTime = 0
+    internal var engagedTime: Double = 0
     /// - Parameter sq: Sequence number of ping events within same session
     internal var sequenceNumber: Int = 0
+    /// - Parameter ir: The page referrer from same domain
+    internal var internalReferrer: String? = nil
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
     internal let trackingFlag: TrackingFlag = .true
     /// - Parameter ff: The additional duration added to the event to extend the page browing session
     internal var ff: Int {
-        if pingTimeInterval == 0 {
+        if sequenceNumber == 1 {
             return 45
         } else {
             if pingTimeInterval * 2 >= 270 {
@@ -61,8 +63,13 @@ public class Mirror: NSObject {
         }
     }
     
-    internal var window: UIWindow
-    internal var gestureRecongnizer: MirrorGestureRecongnizer
+    internal var gestureRecongnizer: MirrorGestureRecongnizer {
+        let gesture = MirrorGestureRecongnizer(target: self, action: #selector(handleGesture(_:)))
+        gesture.requiresExclusiveTouchType = false
+        gesture.cancelsTouchesInView = false
+        gesture.delegate = self
+        return gesture
+    }
     
     public var enableTimerLog = false
     
@@ -71,11 +78,13 @@ public class Mirror: NSObject {
     
     internal var standardPingsTimer: Disposable?
     internal var lastPingData: TrackData?
-    internal var latestPingEngageTime: Int = 0
     
-    internal var didEnterBackgroundRelay = BehaviorRelay<Bool>(value: false)
+    internal var pingState: PingState = .active
     
+    // Gesture
     internal let inactiveRelay = BehaviorRelay<Bool>(value: false)
+    internal var lastTouchEndedTime: TimeInterval = Date().timeIntervalSince1970
+    internal var touchTimer: Disposable?
     
     // MARK: - init
     public init(environment: Environment = .prod,
@@ -88,24 +97,14 @@ public class Mirror: NSObject {
         self.organizationID = organizationID
         self.domain = domain
         self.visitorType = visitorType
-        self.window = window
-        self.gestureRecongnizer = MirrorGestureRecongnizer(target: window, action: nil)
         self.scheduler = scheduler
         
         super.init()
         
-        addGesture()
+        window.addGestureRecognizer(gestureRecongnizer)
         
         observeEnterBackground().subscribe().disposed(by: disposeBag)
         observeEnterForeground().subscribe().disposed(by: disposeBag)
-    }
-    
-    func addGesture() {
-        gestureRecongnizer.requiresExclusiveTouchType = false
-        gestureRecongnizer.cancelsTouchesInView = false
-        gestureRecongnizer.delegate = self
-        gestureRecongnizer.inactiveRelay.bind(to: inactiveRelay).disposed(by: disposeBag)
-        window.addGestureRecognizer(gestureRecongnizer)
     }
     
     // MARK: - Update Environment
@@ -135,55 +134,69 @@ public class Mirror: NSObject {
     public func ping(data: TrackData?) {
         stopStandardPings()
         sequenceNumber = 0
-        engagedTime = 0
-        gestureRecongnizer.resetEngageTime()
+        resetEngageTime()
+        internalReferrer = lastPingData?.path
         lastPingData = nil
         if let data = data {
-            standardPingsTimer = pingTimerObservable(data: data).subscribe()
+            setPingTimer(data: data, pingState: .active, dueTime: 0, intervalsIndex: 0)
         }
     }
     
-    internal func sendPing(data: TrackData) {
+    internal func sendPing(data: TrackData, pingState: PingState) {
         sequenceNumber += 1
+        engagedTime = pingState == .background ? 0 : engagedTime
         let parameters = getParameters(eventType: .ping, data: data)
         
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
                 mirrorLog.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
                 self?.lastPingData = data
+                self?.resetEngageTime()
             }).disposed(by: disposeBag)
     }
     
-    // Timer for engage time
-    internal func pingTimerObservable(data: TrackData) -> Observable<Int> {
-        let backgroundPingIntervals = [30, 45, 75, 165, 1005]
-        let inactivePingIntervals = [15, 30, 45, 75, 135, 255]
-        return Observable<Int>.timer(.seconds(0), period: .seconds(1), scheduler: scheduler)
-            .take(until: { $0 == Constants.maximumPingInterval }, behavior: .inclusive)
-            .do(onNext: { [weak self] time in
+    internal func setPingTimer(data: TrackData, pingState: PingState, dueTime: Int, intervalsIndex: Int) {
+        self.pingState = pingState
+        resetEngageTime()
+        
+        standardPingsTimer?.dispose()
+        standardPingsTimer = nil
+        
+        let period = pingState.intervals[intervalsIndex]
+        
+        func setNewPingTimer(pingState: PingState, intervalsIndex: Int) {
+            if intervalsIndex < pingState.intervals.count - 1 {
+                let index = intervalsIndex + 1
+                let period = pingState.intervals[index]
+                self.setPingTimer(data: data, pingState: pingState, dueTime: period, intervalsIndex: index)
+            }
+        }
+        
+        self.pingTimeInterval = period
+        standardPingsTimer = Observable<Int>.timer(.seconds(dueTime), period: .seconds(period), scheduler: scheduler)
+            .subscribe(onNext: { [weak self] time in
                 guard let self = self else { return }
-                
-                self.pingTimeInterval = time
-                self.engagedTime = self.gestureRecongnizer.engageTime
-                
                 if self.enableTimerLog {
                     mirrorLog.debug("[Track-Mirror] time = \(time)")
                 }
                 
-                if self.didEnterBackgroundRelay.value {
-                    if backgroundPingIntervals.contains(time) {
-                        self.sendPing(data: data)
-                    }
-                } else {
+                self.sendPing(data: data, pingState: pingState)
+                
+                switch pingState {
+                case .active:
                     if self.inactiveRelay.value {
-                        if inactivePingIntervals.contains(time) {
-                            self.sendPing(data: data)
-                        }
+                        self.setPingTimer(data: data, pingState: .inactive, dueTime: PingState.inactive.intervals[0], intervalsIndex: 0)
                     } else {
-                        if time % 15 == 0 {
-                            self.sendPing(data: data)
-                        }
+                        self.inactiveRelay.accept(true)
                     }
+                case .inactive:
+                    if self.inactiveRelay.value {
+                        setNewPingTimer(pingState: .inactive, intervalsIndex: intervalsIndex)
+                    } else {
+                        self.setPingTimer(data: data, pingState: .active, dueTime: PingState.active.intervals[0], intervalsIndex: 0)
+                    }
+                case .background:
+                    setNewPingTimer(pingState: .background, intervalsIndex: intervalsIndex)
                 }
             })
     }
@@ -193,7 +206,11 @@ public class Mirror: NSObject {
         NotificationCenter.default.rx.notification(UIApplication.didEnterBackgroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self else { return }
-                self.didEnterBackgroundRelay.accept(true)
+                if let lastPingData = self.lastPingData {
+                    if let index = PingState.background.intervals.firstIndex(where: { $0 >= self.pingTimeInterval }) {
+                        self.setPingTimer(data: lastPingData, pingState: .background, dueTime: 0, intervalsIndex: index)
+                    }
+                }
             })
     }
     
@@ -202,9 +219,8 @@ public class Mirror: NSObject {
         NotificationCenter.default.rx.notification(UIApplication.willEnterForegroundNotification)
             .do(onNext: { [weak self] _ in
                 guard let self = self else { return }
-                self.didEnterBackgroundRelay.accept(false)
                 guard let lastPingData = self.lastPingData else { return }
-                self.sendPing(data: lastPingData)
+                self.setPingTimer(data: lastPingData, pingState: .active, dueTime: 0, intervalsIndex: 0)
             })
     }
     
@@ -237,7 +253,8 @@ extension Mirror {
         dictionary["p"] = data.path.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         dictionary["u"] = uuid
         dictionary["vt"] = visitorType.rawValue
-        dictionary["eg"] = engagedTime
+        let eg = lround(engagedTime) > 15 ? 15 : lround(engagedTime)
+        dictionary["eg"] = eg
         dictionary["sq"] = sequenceNumber
         
         if let section = data.section {
@@ -246,24 +263,86 @@ extension Mirror {
             dictionary["s"] = "No Section"
         }
         
-        dictionary["a"] = data.authors ?? "No Author"
+        let a = data.authors ?? "No Author"
+        dictionary["a"] = a
         
         if let pageTitle = data.pageTitle, sequenceNumber == 1 {
             dictionary["pt"] = pageTitle
         }
         
         dictionary["pi"] = data.pageID
+        
+        if let internalReferrer = internalReferrer {
+            dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        }
+        
         dictionary["et"] = eventType.rawValue
         dictionary["nc"] = trackingFlag.rawValue
-        dictionary["ff"] = ff
+        
+        if let clickInfo = data.clickInfo {
+            dictionary["ci"] = clickInfo.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        }
+        
+        if eventType == .ping {
+            dictionary["ff"] = ff
+        }
+        
         dictionary["v"] = agentVersion
         
         return dictionary
     }
 }
 
+// MARK: - Gesture
 extension Mirror: UIGestureRecognizerDelegate {
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
+    }
+    
+    @objc func handleGesture(_ sender: UIGestureRecognizer) {
+        switch sender.state {
+        case .began:
+            if pingState == .inactive {
+                if let lastPingData = lastPingData {
+                    setPingTimer(data: lastPingData, pingState: .active, dueTime: 0, intervalsIndex: 0)
+                }
+            }
+            
+            self.inactiveRelay.accept(false)
+            
+            let ts = Date().timeIntervalSince1970
+            if ts > lastTouchEndedTime,
+               ts - lastTouchEndedTime <= 4 {
+                engagedTime += (ts - lastTouchEndedTime)
+            }
+            
+            setTouchTimer(enable: true)
+        case .ended:
+            setTouchTimer(enable: false)
+            
+            let ts = Date().timeIntervalSince1970
+            lastTouchEndedTime = ts
+        default:
+            break
+        }
+    }
+    
+    //  Reset engage time
+    public func resetEngageTime() {
+        lastTouchEndedTime = Date().timeIntervalSince1970
+        engagedTime = 0
+    }
+    
+    // Touch Timer
+    private func setTouchTimer(enable: Bool) {
+        if enable {
+            touchTimer = Observable<Int>.timer(.milliseconds(0), period: .milliseconds(1), scheduler: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] _ in
+                    self?.engagedTime += 0.001
+                })
+        } else {
+            touchTimer?.dispose()
+            touchTimer = nil
+        }
     }
 }

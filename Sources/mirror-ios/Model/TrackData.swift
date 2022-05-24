@@ -12,11 +12,13 @@ public struct TrackData {
     public init(path: String,
                 section: String? = nil,
                 authors: String? = nil,
-                pageTitle: String? = nil) {
+                pageTitle: String? = nil,
+                clickInfo: String? = nil) {
         self.path = path
         self.section = section
         self.authors = authors
         self.pageTitle = pageTitle
+        self.clickInfo = clickInfo
     }
     /// - Parameter p: The clean URL path without query strings. (Usually from canonical URL)
     private (set) var path: String
@@ -28,4 +30,6 @@ public struct TrackData {
     private (set) var pageTitle: String? = nil
     /// - Parameter pi: The page session ID for correlating browsing behaviors under a single page. Generated on client side and store locally. 21 chars length by NanoID.
     public let pageID: String = NanoID.new()
+    /// - Parameter ci: The metadata of click event
+    public let clickInfo: String? = nil
 }
