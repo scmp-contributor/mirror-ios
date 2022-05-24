@@ -31,5 +31,5 @@ public struct TrackData {
     /// - Parameter pi: The page session ID for correlating browsing behaviors under a single page. Generated on client side and store locally. 21 chars length by NanoID.
     public let pageID: String = NanoID.new()
     /// - Parameter ci: The metadata of click event
-    public let clickInfo: String? = nil
+    private (set) var clickInfo: String? = nil
 }
