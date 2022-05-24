@@ -164,7 +164,8 @@ final class mirror_iosTests: XCTestCase {
         let data = TrackData(path: "/news/asia",
                              section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
-                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
+                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post",
+                             clickInfo: "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down")
         mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .click, data: data)
         XCTAssertEqual(parameters.keys.count, 15)
@@ -181,21 +182,9 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["pi"] as? String, data.pageID)
         XCTAssertEqual(parameters["et"] as? String, "click")
         XCTAssertEqual(parameters["nc"] as? String, "true")
-        XCTAssertEqual(parameters["ff"] as? Int, 45)
+        XCTAssertEqual(parameters["ff"] as? Int, nil)
+        XCTAssertEqual(parameters["ci"] as? String, "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
-    }
-    
-    func testStandardPingsTimer() {
-        let scheduler = TestScheduler(initialClock: 0, resolution: 1, simulateProcessingDelay: false)
-        let mirror = Mirror(environment: .uat, domain: "scmp.com", window: UIWindow(), scheduler: scheduler)
-        let data = TrackData(path: "/news/asia")
-        XCTAssertEqual(mirror.sequenceNumber, 0)
-        let _ = scheduler.start(created: 0, subscribed: 0, disposed: 16) {
-            mirror.pingTimerObservable(data: data)
-        }
-        
-        XCTAssertEqual(mirror.engagedTime, 0)
-        XCTAssertEqual(mirror.sequenceNumber, 2)
     }
     
     // MARK: - Test Click
