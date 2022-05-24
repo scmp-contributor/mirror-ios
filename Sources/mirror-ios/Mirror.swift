@@ -16,7 +16,7 @@ public protocol MirrorDelegate: AnyObject {
     func changeView(completion: @escaping () -> Void)
 }
 
-public class Mirror {
+public class Mirror: NSObject {
     
     internal var environment: Environment
     
@@ -48,6 +48,9 @@ public class Mirror {
         }
     }
     
+    internal var window: UIWindow
+    internal var gestureRecongnizer: MirrorGestureRecongnizer
+    
     public var enableTimerLog = false
     
     internal let scheduler: SchedulerType
@@ -59,20 +62,41 @@ public class Mirror {
     
     internal var didEnterBackgroundRelay = BehaviorRelay<Bool>(value: false)
     
+    internal let inactiveRelay = BehaviorRelay<Bool>(value: false)
+    
     // MARK: - init
     public init(environment: Environment = .prod,
                 organizationID: String = "1",
                 domain: String,
                 visitorType: VisitorType = .guest,
+                window: UIWindow,
                 scheduler: SchedulerType = SerialDispatchQueueScheduler(qos: .default)) {
         self.environment = environment
         self.organizationID = organizationID
         self.domain = domain
         self.visitorType = visitorType
+        self.window = window
+        self.gestureRecongnizer = MirrorGestureRecongnizer(target: window, action: nil)
         self.scheduler = scheduler
+        
+        super.init()
+        
+        addGesture()
         
         observeEnterBackground().subscribe().disposed(by: disposeBag)
         observeEnterForeground().subscribe().disposed(by: disposeBag)
+        
+        inactiveRelay.distinctUntilChanged().asObservable().subscribe(onNext: {
+            print("inactive = \($0)")
+        }).disposed(by: disposeBag)
+    }
+    
+    func addGesture() {
+        gestureRecongnizer.requiresExclusiveTouchType = false
+        gestureRecongnizer.cancelsTouchesInView = false
+        gestureRecongnizer.delegate = self
+        gestureRecongnizer.inactiveRelay.bind(to: inactiveRelay).disposed(by: disposeBag)
+        window.addGestureRecognizer(gestureRecongnizer)
     }
     
     // MARK: - Update Environment
@@ -103,6 +127,7 @@ public class Mirror {
         stopStandardPings()
         sequenceNumber = 0
         engagedTime = 0
+        gestureRecongnizer.resetEngageTime()
         lastPingData = nil
         if let data = data {
             standardPingsTimer = pingTimerObservable(data: data).subscribe()
@@ -112,7 +137,6 @@ public class Mirror {
     internal func sendPing(data: TrackData) {
         sequenceNumber += 1
         let parameters = getParameters(eventType: .ping, data: data)
-        latestPingEngageTime = engagedTime
         
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
@@ -124,11 +148,13 @@ public class Mirror {
     // Timer for engage time
     internal func pingTimerObservable(data: TrackData) -> Observable<Int> {
         let backgroundPingIntervals = [30, 45, 75, 165, 1005]
+        let inactivePingIntervals = [15, 30, 45, 75, 135, 255]
         return Observable<Int>.timer(.seconds(0), period: .seconds(1), scheduler: scheduler)
             .take(until: { $0 == Constants.maximumPingInterval }, behavior: .inclusive)
             .do(onNext: { [weak self] time in
                 guard let self = self else { return }
-                self.engagedTime = time
+                
+                self.engagedTime = self.gestureRecongnizer.engageTime
                 
                 if self.enableTimerLog {
                     mirrorLog.debug("[Track-Mirror] time = \(time)")
@@ -139,8 +165,14 @@ public class Mirror {
                         self.sendPing(data: data)
                     }
                 } else {
-                    if (time - self.latestPingEngageTime) % 15 == 0 {
-                        self.sendPing(data: data)
+                    if self.inactiveRelay.value {
+                        if inactivePingIntervals.contains(time) {
+                            self.sendPing(data: data)
+                        }
+                    } else {
+                        if time % 15 == 0 {
+                            self.sendPing(data: data)
+                        }
                     }
                 }
             })
@@ -217,5 +249,11 @@ extension Mirror {
         dictionary["v"] = agentVersion
         
         return dictionary
+    }
+}
+
+extension Mirror: UIGestureRecognizerDelegate {
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true
     }
 }

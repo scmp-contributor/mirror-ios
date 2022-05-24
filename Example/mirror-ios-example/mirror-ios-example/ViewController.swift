@@ -18,7 +18,9 @@ class ViewController: UIViewController {
     @IBOutlet weak var authorsTextField: UITextField!
     @IBOutlet weak var pageTitleTextField: UITextField!
     
-    let mirrorManager = MirrorManager()
+    var mirrorManager: MirrorManager? {
+        SceneDelegate.shared?.mirrorManager
+    }
     
     var trackData: TrackData? {
         guard let path = pathTextField.text, !path.isEmpty else { return nil }
@@ -51,7 +53,7 @@ class ViewController: UIViewController {
             print("Path is necessary")
             return
         }
-        mirrorManager.ping(data: trackData)
+        mirrorManager?.ping(data: trackData)
     }
     
     @IBAction func clickButton(_ sender: UIButton) {
@@ -59,7 +61,7 @@ class ViewController: UIViewController {
             print("Path is necessary")
             return
         }
-        mirrorManager.click(data: trackData)
+        mirrorManager?.click(data: trackData)
     }
     
     @IBAction func resetButton(_ sender: UIButton) {

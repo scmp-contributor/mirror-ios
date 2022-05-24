@@ -5,17 +5,18 @@
 //  Created by Terry Lee on 2022/5/13.
 //
 
-import Foundation
+import UIKit
 import RxSwift
 import mirror_ios
 
 class MirrorManager {
     
-    let mirror: Mirror = Mirror(environment: .uat, domain: "scmp.com")
+    let mirror: Mirror
     
     let disposeBag = DisposeBag()
     
-    init() {
+    init(window: UIWindow) {
+        mirror = Mirror(environment: .uat, domain: "scmp.com", window: window)
         mirror.delegate = self
     }
     
