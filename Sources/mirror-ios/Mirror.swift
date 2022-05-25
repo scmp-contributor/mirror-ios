@@ -133,6 +133,7 @@ public class Mirror: NSObject {
         if data?.isEqualExcluePageIDTo(lastPingData) ?? false {
             return
         }
+        lastPingData = data
         stopStandardPings()
         sequenceNumber = 0
         resetEngageTime()
