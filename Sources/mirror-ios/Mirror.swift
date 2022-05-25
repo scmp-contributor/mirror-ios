@@ -71,8 +71,6 @@ public class Mirror: NSObject {
         return gesture
     }
     
-    public var enableTimerLog = false
-    
     internal let scheduler: SchedulerType
     internal let disposeBag = DisposeBag()
     
@@ -142,16 +140,17 @@ public class Mirror: NSObject {
         }
     }
     
-    internal func sendPing(data: TrackData, pingState: PingState) {
+    internal func sendPing(data: TrackData, pingState: PingState, pingInterval: Int) {
         sequenceNumber += 1
         engagedTime = pingState == .background ? 0 : engagedTime
         let parameters = getParameters(eventType: .ping, data: data)
         
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
-                mirrorLog.debug("[Track-Mirror] ping success, parameters: \(parameters), response: \(response.statusCode)")
-                self?.lastPingData = data
-                self?.resetEngageTime()
+                guard let self = self else { return }
+                mirrorLog.debug("[Track-Mirror] ping success, state: \(pingState), ping interval: \(pingInterval), next ping interval: \(self.pingTimeInterval), parameters: \(parameters), response: \(response.statusCode)")
+                self.lastPingData = data
+                self.resetEngageTime()
             }).disposed(by: disposeBag)
     }
     
@@ -176,11 +175,8 @@ public class Mirror: NSObject {
         standardPingsTimer = Observable<Int>.timer(.seconds(dueTime), period: .seconds(period), scheduler: scheduler)
             .subscribe(onNext: { [weak self] time in
                 guard let self = self else { return }
-                if self.enableTimerLog {
-                    mirrorLog.debug("[Track-Mirror] time = \(time)")
-                }
                 
-                self.sendPing(data: data, pingState: pingState)
+                self.sendPing(data: data, pingState: pingState, pingInterval: period)
                 
                 switch pingState {
                 case .active:
