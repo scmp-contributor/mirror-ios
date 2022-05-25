@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TrackData {
+public struct TrackData: Equatable {
     
     public init(path: String,
                 section: String? = nil,
@@ -32,4 +32,12 @@ public struct TrackData {
     public let pageID: String = NanoID.new()
     /// - Parameter ci: The metadata of click event
     private (set) var clickInfo: String? = nil
+    
+    public func isEqualExcluePageIDTo(_ other: TrackData?) -> Bool {
+        path == other?.path &&
+        section == other?.section &&
+        authors == other?.authors &&
+        pageTitle == other?.pageTitle &&
+        clickInfo == other?.clickInfo
+    }
 }

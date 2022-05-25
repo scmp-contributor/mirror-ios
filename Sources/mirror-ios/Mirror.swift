@@ -13,7 +13,7 @@ import UIKit
 import SwiftyBeaver
 
 public protocol MirrorDelegate: AnyObject {
-    func changeView(completion: @escaping () -> Void)
+    func stopPing(handler: @escaping () -> Void)
 }
 
 public class Mirror: NSObject {
@@ -57,7 +57,7 @@ public class Mirror: NSObject {
     
     public weak var delegate: MirrorDelegate? {
         didSet {
-            delegate?.changeView { [weak self] in
+            delegate?.stopPing { [weak self] in
                 self?.stopStandardPings()
             }
         }
@@ -130,11 +130,12 @@ public class Mirror: NSObject {
     
     /// - Parameter data: The TrackData for mirror parameters
     public func ping(data: TrackData?) {
+        if data?.isEqualExcluePageIDTo(lastPingData) ?? false {
+            return
+        }
         stopStandardPings()
         sequenceNumber = 0
         resetEngageTime()
-        internalReferrer = lastPingData?.path
-        lastPingData = nil
         if let data = data {
             setPingTimer(data: data, pingState: .active, dueTime: 0, intervalsIndex: 0)
         }
@@ -222,6 +223,8 @@ public class Mirror: NSObject {
     
     // stop ping
     internal func stopStandardPings() {
+        internalReferrer = lastPingData?.path
+        lastPingData = nil
         standardPingsTimer?.dispose()
         standardPingsTimer = nil
     }

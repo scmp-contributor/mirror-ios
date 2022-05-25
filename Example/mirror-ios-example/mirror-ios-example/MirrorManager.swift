@@ -30,13 +30,13 @@ class MirrorManager {
 }
 
 extension MirrorManager: MirrorDelegate {
-    func changeView(completion: @escaping () -> ()) {
+    func stopPing(handler: @escaping () -> ()) {
         currentViewControllerRelay
             .distinctUntilChanged()
             .asObservable()
             .map { _ in }
             .subscribe(onNext: {
-                completion()
+                handler()
             }).disposed(by: disposeBag)
     }
 }
