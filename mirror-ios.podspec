@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'mirror-ios'
-  s.version          = '0.0.18'
+  s.version          = '0.0.19'
   s.summary          = 'SCMP Mirror iOS SDK'
 
   s.description      = <<-DESC
@@ -24,6 +24,10 @@ Pod::Spec.new do |s|
   s.swift_version = '5.0'
 
   s.source_files = 'Sources/mirror-ios/**/*'
+  
+  s.resource_bundles = {
+    'mirror-ios' => ['Sources/Resources/*.png']
+  }
   
   s.dependency 'RxSwift', '~> 6.5.0'
   s.dependency 'RxCocoa', '~> 6.5.0'

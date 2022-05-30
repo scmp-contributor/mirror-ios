@@ -18,5 +18,5 @@ struct Constants {
     static let maximumPingInterval = 1005
     
     // Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
-    static let agentVersion: String = "mi-0.0.18"
+    static let agentVersion: String = "mi-0.0.19"
 }
