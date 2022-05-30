@@ -26,7 +26,7 @@ pod 'Mirror'
 
 Project -> Package Dependencies -> Add Package
 
-![SPM tutorial](../main/Sources/Resources/SPM_Tutorial.png)
+![SPM tutorial](../main/Sources/Resources/spm_tutorial.png)
 
 https://github.com/scmp-contributor/mirror-ios/blob/main/Sources/mirror-ios/README_Resources/SPM_Tutorial.png
 
