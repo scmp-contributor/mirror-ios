@@ -29,7 +29,8 @@ let package = Package(
             dependencies: ["RxSwift",
                            .product(name: "RxCocoa", package: "RxSwift"),
                            "RxAlamofire",
-                           "SwiftyBeaver"]),
+                           "SwiftyBeaver"],
+            resources: [.process("README_Resources/SPM_Tutorial.png")]),
         .testTarget(
             name: "mirror-iosTests",
             dependencies: ["mirror-ios",

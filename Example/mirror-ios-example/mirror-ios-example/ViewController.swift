@@ -17,6 +17,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var sectionTextField: UITextField!
     @IBOutlet weak var authorsTextField: UITextField!
     @IBOutlet weak var pageTitleTextField: UITextField!
+    @IBOutlet weak var clickInfoTextField: UITextField!
     
     var mirrorManager: MirrorManager? {
         SceneDelegate.shared?.mirrorManager
@@ -27,25 +28,36 @@ class ViewController: UIViewController {
         let section = (sectionTextField.text?.isEmpty ?? true) ? nil : sectionTextField.text
         let authors = (authorsTextField.text?.isEmpty ?? true) ? nil : authorsTextField.text
         let pageTitle = (pageTitleTextField.text?.isEmpty ?? true) ? nil : pageTitleTextField.text
+        let ckickInfo = (clickInfoTextField.text?.isEmpty ?? true) ? nil : clickInfoTextField.text
         let data = TrackData(path: path,
                              section: section,
                              authors: authors,
-                             pageTitle: pageTitle)
+                             pageTitle: pageTitle,
+                             clickInfo: ckickInfo)
         return data
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-        resetDefault()
+        resetToPingData()
         currentViewControllerRelay.accept(self)
     }
     
-    func resetDefault() {
+    func resetToPingData() {
         pathTextField.text = "/news/asia"
         sectionTextField.text = "News, Hong Kong, Health & Environment"
         authorsTextField.text = "Keung To, Anson Lo"
         pageTitleTextField.text = "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post"
+        clickInfoTextField.text = nil
+    }
+    
+    func resetToClickData() {
+        pathTextField.text = "/hk"
+        sectionTextField.text = nil
+        authorsTextField.text = nil
+        pageTitleTextField.text = nil
+        clickInfoTextField.text = "https://scmp.com/news/hong-kong/health-environment/article/3179276/coronavirus-hong-kong-prepared-rebound-infections"
     }
     
     @IBAction func pingButton(_ sender: UIButton) {
@@ -64,9 +76,14 @@ class ViewController: UIViewController {
         mirrorManager?.click(data: trackData)
     }
     
-    @IBAction func resetButton(_ sender: UIButton) {
-        resetDefault()
+    @IBAction func resetToPingDataButton(_ sender: UIButton) {
+        resetToPingData()
     }
+    
+    @IBAction func resetToClickDataButton(_ sender: UIButton) {
+        resetToClickData()
+    }
+    
     
     @IBAction func simulateChangeViewButton(_ sender: UIButton) {
         let vc = ViewController()

@@ -150,7 +150,16 @@ public class Mirror: NSObject {
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
                 guard let self = self else { return }
-                mirrorLog.debug("[Track-Mirror] ping success, state: \(pingState), ping interval: \(pingInterval), next ping interval: \(self.pingTimeInterval), parameters: \(parameters), response: \(response.statusCode)")
+                mirrorLog.debug("""
+                                [Track-Mirror]
+                                mirror -> ping success, response: \(response.statusCode),
+                                mirror -> state: \(pingState),
+                                mirror -> ping interval: \(pingInterval),
+                                mirror -> next ping interval: \(self.pingTimeInterval)
+                                ====== Mirror Request Body Start ======
+                                \(self.formatMirrorDictionary(parameters))
+                                ====== Mirror Request Body End ======
+                                """)
                 self.lastPingData = data
                 self.resetEngageTime()
             }).disposed(by: disposeBag)
@@ -238,13 +247,21 @@ public class Mirror: NSObject {
         
         sendMirror(eventType: .click, parameters: parameters)
             .subscribe(onNext: { response in
-                mirrorLog.debug("[Track-Mirror] click success, parameters: \(parameters), response: \(response.statusCode)")
+                mirrorLog.debug("""
+                                [Track-Mirror]
+                                mirror -> click success, response: \(response.statusCode)
+                                ====== Mirror Request Body Start ======
+                                \(self.formatMirrorDictionary(parameters))
+                                ====== Mirror Request Body End ======
+                                """)
             }).disposed(by: disposeBag)
     }
 }
 
 extension Mirror {
     internal func getParameters(eventType: EventType, data: TrackData) -> [String: Any] {
+        
+        let isPingEvent = eventType == .ping
         
         var dictionary: [String: Any] = [:]
         
@@ -257,24 +274,28 @@ extension Mirror {
         dictionary["eg"] = eg
         dictionary["sq"] = sequenceNumber
         
-        if let section = data.section {
-            dictionary["s"] = "articles only, \(section)"
-        } else {
-            dictionary["s"] = "No Section"
+        if isPingEvent {
+            if let section = data.section {
+                dictionary["s"] = "articles only, \(section)"
+            } else {
+                dictionary["s"] = "No Section"
+            }
+            
+            let authors = data.authors ?? "No Author"
+            dictionary["a"] = authors
+            
+            if let internalReferrer = internalReferrer {
+                dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            }
+            
+            dictionary["ff"] = ff
         }
-        
-        let a = data.authors ?? "No Author"
-        dictionary["a"] = a
         
         if let pageTitle = data.pageTitle, sequenceNumber == 1 {
             dictionary["pt"] = pageTitle
         }
         
         dictionary["pi"] = data.pageID
-        
-        if let internalReferrer = internalReferrer {
-            dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-        }
         
         dictionary["et"] = eventType.rawValue
         dictionary["nc"] = trackingFlag.rawValue
@@ -283,13 +304,20 @@ extension Mirror {
             dictionary["ci"] = clickInfo.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
         }
         
-        if eventType == .ping {
-            dictionary["ff"] = ff
-        }
-        
         dictionary["v"] = agentVersion
         
         return dictionary
+    }
+    
+    internal func formatMirrorDictionary(_ dic: [String: Any]) -> String {
+        var result = ""
+        for (index, d) in dic.enumerated() {
+            result.append("mirror parameter \(d.key): \(d.value)")
+            if index < dic.count - 1 {
+                result.append("\n")
+            }
+        }
+        return result
     }
 }
 
