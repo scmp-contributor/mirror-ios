@@ -28,8 +28,6 @@ Project -> Package Dependencies -> Add Package
 
 ![SPM tutorial](../main/Sources/Resources/spm_tutorial.png)
 
-https://github.com/scmp-contributor/mirror-ios/blob/main/Sources/mirror-ios/README_Resources/SPM_Tutorial.png
-
 Once you have your Swift package set up, adding mirror-ios as a dependency is as easy as adding it to the dependencies value of your Package.swift.
 
 ```swift
