@@ -26,7 +26,7 @@ pod 'Mirror'
 
 Project -> Package Dependencies -> Add Package
 
-![SPM tutorial](https://raw.githubusercontent.com/mirror-ios/mirror-ios/master/README_Resources/SPM_Tutorial.png)
+![SPM tutorial](/README_Resources/SPM_Tutorial.png)
 
 Once you have your Swift package set up, adding mirror-ios as a dependency is as easy as adding it to the dependencies value of your Package.swift.
 
@@ -38,7 +38,7 @@ dependencies: [
 
 ## Usage
 
-###Initialize Mirror:
+### Initialize Mirror:
 
 ```swift
 let mirror = Mirror(environment: "YOUR_ENVIRONMENT",
@@ -49,7 +49,7 @@ let mirror = Mirror(environment: "YOUR_ENVIRONMENT",
                     scheduler: "YOUR_SCHEDULER_TYPE")
 ```
 
-###Send Data:
+### Send Data:
 
 **Send Ping Event:**
 
@@ -71,19 +71,19 @@ let trackData = TrackData(path: "CURRENT_PAGE_PATH",
 mirror.click(data: trackData)
 ```
 
-###Update Environment:
+### Update Environment:
 
 ```swift
 mirror.updateEnvironment("YOUR_ENVIRONMENT")
 ```
 
-###Update Domain:
+### Update Domain:
 
 ```swift
 mirror.updateDomain("YOUR_DOMAIN")
 ```
 
-###Update Visitor Type:
+### Update Visitor Type:
 
 ```swift
 mirror.updateVisitorType("YOUR_VISITOR_TYPE")
