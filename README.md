@@ -32,7 +32,7 @@ Once you have your Swift package set up, adding mirror-ios as a dependency is as
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/scmp-contributor/mirror-ios", .upToNextMajor(from: "0.0.17"))
+    .package(url: "https://github.com/scmp-contributor/mirror-ios", .upToNextMajor(from: "0.0.19"))
 ]
 ```
 
