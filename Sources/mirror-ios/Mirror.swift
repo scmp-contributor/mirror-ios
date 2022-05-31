@@ -36,7 +36,7 @@ public class Mirror: NSObject {
     /// - Parameter ir: The page referrer from same domain
     internal var internalReferrer: String? = nil
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
-    internal let trackingFlag: TrackingFlag = .true
+    internal let trackingFlag: TrackingFlag = .ˋfalseˋ
     /// - Parameter ff: The additional duration added to the event to extend the page browing session
     internal var ff: Int {
         if sequenceNumber == 1 {
@@ -133,8 +133,8 @@ public class Mirror: NSObject {
         if data?.isEqualExcluePageIDTo(lastPingData) ?? false {
             return
         }
-        lastPingData = data
         stopStandardPings()
+        lastPingData = data
         sequenceNumber = 0
         resetEngageTime()
         if let data = data {
@@ -243,6 +243,7 @@ public class Mirror: NSObject {
     
     /// - Parameter data: The TrackData for mirror parameters
     public func click(data: TrackData) {
+        sequenceNumber += 1
         let parameters = getParameters(eventType: .click, data: data)
         
         sendMirror(eventType: .click, parameters: parameters)
@@ -274,28 +275,28 @@ extension Mirror {
         dictionary["eg"] = eg
         dictionary["sq"] = sequenceNumber
         
-        if isPingEvent {
-            if let section = data.section {
-                dictionary["s"] = "articles only, \(section)"
-            } else {
-                dictionary["s"] = "No Section"
-            }
-            
-            let authors = data.authors ?? "No Author"
-            dictionary["a"] = authors
-            
-            if let internalReferrer = internalReferrer {
-                dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            }
-            
-            dictionary["ff"] = ff
+        if let section = data.section {
+            dictionary["s"] = "articles only, \(section)"
+        } else {
+            dictionary["s"] = "No Section"
         }
+        
+        let authors = data.authors ?? "No Author"
+        dictionary["a"] = authors
         
         if let pageTitle = data.pageTitle, sequenceNumber == 1 {
             dictionary["pt"] = pageTitle
         }
         
         dictionary["pi"] = data.pageID
+        
+        if isPingEvent {
+            if let internalReferrer = internalReferrer {
+                dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            }
+            
+            dictionary["ff"] = ff
+        }
         
         dictionary["et"] = eventType.rawValue
         dictionary["nc"] = trackingFlag.rawValue

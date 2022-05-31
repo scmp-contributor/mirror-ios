@@ -8,6 +8,6 @@
 import Foundation
 
 public enum TrackingFlag: String {
-    case `true`
-    case ˋfalseˋ
+    case `true` = "true"
+    case ˋfalseˋ = "false"
 }

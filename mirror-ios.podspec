@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'mirror-ios'
-  s.version          = '0.0.19'
+  s.version          = '0.0.20'
   s.summary          = 'SCMP Mirror iOS SDK'
 
   s.description      = <<-DESC

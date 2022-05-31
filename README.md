@@ -32,7 +32,7 @@ Once you have your Swift package set up, adding mirror-ios as a dependency is as
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/scmp-contributor/mirror-ios", .upToNextMajor(from: "0.0.19"))
+    .package(url: "https://github.com/scmp-contributor/mirror-ios", .upToNextMajor(from: "0.0.20"))
 ]
 ```
 
@@ -101,21 +101,21 @@ mirror -> state: active,
 mirror -> ping interval: 15,
 mirror -> next ping interval: 15
 ====== Mirror Request Body Start ======
-mirror parameter v: mi-0.0.18
-mirror parameter u: FeSjWW93~RtVA2kSs_3t5
-mirror parameter s: articles only, News, Hong Kong, Health & Environment
-mirror parameter vt: gst
 mirror parameter ff: 45
-mirror parameter a: Keung To, Anson Lo
-mirror parameter p: %2Fnews%2Fasia
-mirror parameter sq: 1
-mirror parameter ir: %2Fnews%2Fasia
-mirror parameter nc: true
-mirror parameter k: 1
+mirror parameter u: FeSjWW93~RtVA2kSs_3t5
 mirror parameter eg: 0
-mirror parameter pi: wqO5eU~ISONHHJtqKATeU
-mirror parameter pt: HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post
+mirror parameter ir: %2Fhk
+mirror parameter v: mi-0.0.20
+mirror parameter p: %2Fnews%2Fasia
 mirror parameter et: ping
+mirror parameter vt: gst
+mirror parameter s: articles only, News, Hong Kong, Health & Environment
+mirror parameter sq: 1
+mirror parameter pt: HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post
+mirror parameter nc: false
+mirror parameter pi: YCnPyuzyxWBZxkXz42JiU
+mirror parameter k: 1
+mirror parameter a: Keung To, Anson Lo
 mirror parameter d: scmp.com
 ====== Mirror Request Body End ======
 ```
@@ -126,17 +126,19 @@ mirror parameter d: scmp.com
 [Track-Mirror]
 mirror -> click success, response: 200
 ====== Mirror Request Body Start ======
-mirror parameter d: scmp.com
-mirror parameter p: %2Fhk
+mirror parameter ci: https%3A%2F%2Fscmp.com%2Fnews%2Fhong-kong%2Fhealth-environment%2Farticle%2F3179276%2Fcoronavirus-hong-kong-prepared-rebound-infections
+mirror parameter k: 1
+mirror parameter sq: 2
+mirror parameter pi: g8NYy~bCNg6WtnF_bUH7L
+mirror parameter v: mi-0.0.20
 mirror parameter eg: 2
 mirror parameter vt: gst
-mirror parameter pi: H67IQLk9WMqrzzjNxO6MK
-mirror parameter nc: true
-mirror parameter ci: https%3A%2F%2Fscmp.com%2Fnews%2Fhong-kong%2Fhealth-environment%2Farticle%2F3179276%2Fcoronavirus-hong-kong-prepared-rebound-infections
-mirror parameter u: FeSjWW93~RtVA2kSs_3t5
 mirror parameter et: click
-mirror parameter v: mi-0.0.18
-mirror parameter k: 1
-mirror parameter sq: 0
+mirror parameter s: articles only, News, Hong Kong, Health & Environment
+mirror parameter u: FeSjWW93~RtVA2kSs_3t5
+mirror parameter a: Keung To, Anson Lo
+mirror parameter nc: false
+mirror parameter d: scmp.com
+mirror parameter p: %2Fnews%2Fasia
 ====== Mirror Request Body End ======
 ```

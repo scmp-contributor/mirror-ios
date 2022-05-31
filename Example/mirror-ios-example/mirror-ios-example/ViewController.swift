@@ -53,9 +53,9 @@ class ViewController: UIViewController {
     }
     
     func resetToClickData() {
-        pathTextField.text = "/hk"
-        sectionTextField.text = nil
-        authorsTextField.text = nil
+        pathTextField.text = "/news/asia"
+        sectionTextField.text = "News, Hong Kong, Health & Environment"
+        authorsTextField.text = "Keung To, Anson Lo"
         pageTitleTextField.text = nil
         clickInfoTextField.text = "https://scmp.com/news/hong-kong/health-environment/article/3179276/coronavirus-hong-kong-prepared-rebound-infections"
     }

@@ -25,7 +25,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertNotNil(mirror.visitorType)
         XCTAssertEqual(mirror.engagedTime, 0)
         XCTAssertEqual(mirror.sequenceNumber, 0)
-        XCTAssertEqual(mirror.trackingFlag, TrackingFlag.true)
+        XCTAssertEqual(mirror.trackingFlag, TrackingFlag.ˋfalseˋ)
         XCTAssertNotNil(mirror.agentVersion)
     }
     
@@ -65,9 +65,9 @@ final class mirror_iosTests: XCTestCase {
             let changeViewRelay: PublishRelay<Void> = PublishRelay()
             let disposeBag = DisposeBag()
             
-            func changeView(completion: @escaping () -> ()) {
+            func stopPing(handler: @escaping () -> Void) {
                 changeViewRelay.subscribe(onNext: {
-                    completion()
+                    handler()
                 }).disposed(by: disposeBag)
             }
         }
@@ -141,7 +141,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
         XCTAssertEqual(parameters["vt"] as? String, "gst")
         XCTAssertEqual(parameters["et"] as? String, "ping")
-        XCTAssertEqual(parameters["nc"] as? String, "true")
+        XCTAssertEqual(parameters["nc"] as? String, "false")
         XCTAssertEqual(parameters["p"] as? String, "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
         XCTAssertEqual(parameters["eg"] as? Int, 0)
         XCTAssertEqual(parameters["sq"] as? Int, 1)
@@ -164,11 +164,10 @@ final class mirror_iosTests: XCTestCase {
         let data = TrackData(path: "/news/asia",
                              section: "News, Hong Kong, Health & Environment",
                              authors: "Keung To, Anson Lo",
-                             pageTitle: "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post",
                              clickInfo: "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down")
         mirror.sequenceNumber = 1
         let parameters = mirror.getParameters(eventType: .click, data: data)
-        XCTAssertEqual(parameters.keys.count, 15)
+        XCTAssertEqual(parameters.keys.count, 14)
         XCTAssertEqual(parameters["k"] as? String, "1")
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
@@ -178,10 +177,9 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["sq"] as? Int, 1)
         XCTAssertEqual(parameters["s"] as? String, "articles only, News, Hong Kong, Health & Environment")
         XCTAssertEqual(parameters["a"] as? String, "Keung To, Anson Lo")
-        XCTAssertEqual(parameters["pt"] as? String, "HK, China, Asia news & opinion from SCMP’s global edition | South China Morning Post")
         XCTAssertEqual(parameters["pi"] as? String, data.pageID)
         XCTAssertEqual(parameters["et"] as? String, "click")
-        XCTAssertEqual(parameters["nc"] as? String, "true")
+        XCTAssertEqual(parameters["nc"] as? String, "false")
         XCTAssertEqual(parameters["ff"] as? Int, nil)
         XCTAssertEqual(parameters["ci"] as? String, "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
