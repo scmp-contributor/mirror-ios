@@ -21,17 +21,17 @@ public struct TrackData: Equatable {
         self.clickInfo = clickInfo
     }
     /// - Parameter p: The clean URL path without query strings. (Usually from canonical URL)
-    private (set) var path: String
+    public private (set) var path: String
     /// - Parameter s: The page section of the article
-    private (set) var section: String? = nil
+    public private (set) var section: String? = nil
     /// - Parameter a: The page authors of the article
-    private (set) var authors: String? = nil
+    public private (set) var authors: String? = nil
     /// - Parameter pt: The page title
-    private (set) var pageTitle: String? = nil
+    public private (set) var pageTitle: String? = nil
     /// - Parameter pi: The page session ID for correlating browsing behaviors under a single page. Generated on client side and store locally. 21 chars length by NanoID.
     public let pageID: String = NanoID.new()
     /// - Parameter ci: The metadata of click event
-    private (set) var clickInfo: String? = nil
+    public private (set) var clickInfo: String? = nil
     
     public func isEqualExcluePageIDTo(_ other: TrackData?) -> Bool {
         path == other?.path &&
