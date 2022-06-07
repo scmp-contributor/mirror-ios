@@ -16,8 +16,9 @@ class MirrorManager {
     let disposeBag = DisposeBag()
     
     init(window: UIWindow) {
-        mirror = Mirror(environment: .uat, domain: "scmp.com", window: window)
+        mirror = Mirror(environment: .uat, domain: "scmp.com")
         mirror.delegate = self
+        mirror.setWindow(window: window)
     }
     
     func ping(data: TrackData) {

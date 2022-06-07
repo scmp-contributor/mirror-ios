@@ -18,27 +18,27 @@ public protocol MirrorDelegate: AnyObject {
 
 public class Mirror: NSObject {
     
-    internal var environment: Environment
+    public private (set) var environment: Environment
     
     // MARK: - Mirror SDK Parameters
     /// - Parameter k: The unique organization ID (uuid) from Mirror service. Each organization can hold multiple domains. Please get this value from Mirror team.
-    internal let organizationID: String
+    public let organizationID: String
     /// - Parameter d: The domain address that we implement the tracking. (Usually from canonical URL)
-    internal var domain: String
+    public private (set) var domain: String
     /// - Parameter u: The unique ID for each visitor, generated on client side and store locally. 21 chars length by NanoID.
-    internal let uuid: String = Preferences.sharedInstance.uuid
+    public let uuid: String = Preferences.sharedInstance.uuid
     /// - Parameter vt: The visitor type.
-    internal var visitorType: VisitorType
+    public private (set) var visitorType: VisitorType
     /// - Parameter eg: The visitor engaged time on the page in seconds.
-    internal var engagedTime: Double = 0
+    public private (set) var engagedTime: Double = 0
     /// - Parameter sq: Sequence number of ping events within same session
-    internal var sequenceNumber: Int = 0
+    public private (set) var sequenceNumber: Int = 0
     /// - Parameter ir: The page referrer from same domain
-    internal var internalReferrer: String? = nil
+    public private (set) var internalReferrer: String? = nil
     /// - Parameter nc: The flag to indicate if visitor accepts tracking
-    internal let trackingFlag: TrackingFlag = .ˋfalseˋ
+    public let trackingFlag: TrackingFlag = .ˋfalseˋ
     /// - Parameter ff: The additional duration added to the event to extend the page browing session
-    internal var ff: Int {
+    public var ff: Int {
         if sequenceNumber == 1 {
             return 45
         } else {
@@ -50,9 +50,9 @@ public class Mirror: NSObject {
         }
     }
     /// - Parameter v: Agent version, for iOS "mi-x.x.x", for android "ma-x.x.x"
-    internal let agentVersion: String = Constants.agentVersion
+    public let agentVersion: String = Constants.agentVersion
     
-    internal var pingTimeInterval = 0
+    public private (set) var pingTimeInterval = 0
     // MARK: - Constants & Variables
     
     public weak var delegate: MirrorDelegate? {
@@ -63,21 +63,13 @@ public class Mirror: NSObject {
         }
     }
     
-    internal var gestureRecongnizer: MirrorGestureRecongnizer {
-        let gesture = MirrorGestureRecongnizer(target: self, action: #selector(handleGesture(_:)))
-        gesture.requiresExclusiveTouchType = false
-        gesture.cancelsTouchesInView = false
-        gesture.delegate = self
-        return gesture
-    }
-    
     internal let scheduler: SchedulerType
     internal let disposeBag = DisposeBag()
     
     internal var standardPingsTimer: Disposable?
-    internal var lastPingData: TrackData?
+    public private (set) var lastPingData: TrackData?
     
-    internal var pingState: PingState = .active
+    public private (set) var pingState: PingState = .active
     
     // Gesture
     internal let inactiveRelay = BehaviorRelay<Bool>(value: false)
@@ -89,7 +81,6 @@ public class Mirror: NSObject {
                 organizationID: String = "1",
                 domain: String,
                 visitorType: VisitorType = .guest,
-                window: UIWindow,
                 scheduler: SchedulerType = SerialDispatchQueueScheduler(qos: .default)) {
         self.environment = environment
         self.organizationID = organizationID
@@ -99,10 +90,17 @@ public class Mirror: NSObject {
         
         super.init()
         
-        window.addGestureRecognizer(gestureRecongnizer)
-        
         observeEnterBackground().subscribe().disposed(by: disposeBag)
         observeEnterForeground().subscribe().disposed(by: disposeBag)
+    }
+    
+    // MARK: - Set Window
+    public func setWindow(window: UIWindow?) {
+        let gesture = MirrorGestureRecongnizer(target: self, action: #selector(handleGesture(_:)))
+        gesture.requiresExclusiveTouchType = false
+        gesture.cancelsTouchesInView = false
+        gesture.delegate = self
+        window?.addGestureRecognizer(gesture)
     }
     
     // MARK: - Update Environment
@@ -243,7 +241,9 @@ public class Mirror: NSObject {
     
     /// - Parameter data: The TrackData for mirror parameters
     public func click(data: TrackData) {
+        guard let pageID = lastPingData?.pageID else { return }
         sequenceNumber += 1
+        let data = TrackData(path: data.path, section: data.section, authors: data.authors, pageTitle: data.pageTitle, pageID: pageID, clickInfo: data.clickInfo)
         let parameters = getParameters(eventType: .click, data: data)
         
         sendMirror(eventType: .click, parameters: parameters)
@@ -268,7 +268,7 @@ extension Mirror {
         
         dictionary["k"] = organizationID
         dictionary["d"] = domain
-        dictionary["p"] = data.path.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+        dictionary["p"] = data.path
         dictionary["u"] = uuid
         dictionary["vt"] = visitorType.rawValue
         let eg = lround(engagedTime) > 15 ? 15 : lround(engagedTime)
@@ -292,7 +292,7 @@ extension Mirror {
         
         if isPingEvent {
             if let internalReferrer = internalReferrer {
-                dictionary["ir"] = internalReferrer.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+                dictionary["ir"] = internalReferrer
             }
             
             dictionary["ff"] = ff
@@ -302,7 +302,7 @@ extension Mirror {
         dictionary["nc"] = trackingFlag.rawValue
         
         if let clickInfo = data.clickInfo {
-            dictionary["ci"] = clickInfo.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            dictionary["ci"] = clickInfo
         }
         
         dictionary["v"] = agentVersion

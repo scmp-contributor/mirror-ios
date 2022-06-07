@@ -7,12 +7,12 @@
 
 import Foundation
 
-enum PingState {
+public enum PingState {
     case active
     case inactive
     case background
     
-    var intervals: [Int] {
+    public var intervals: [Int] {
         switch self {
         case .active:
             return [15]

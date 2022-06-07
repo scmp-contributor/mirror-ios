@@ -142,7 +142,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["vt"] as? String, "gst")
         XCTAssertEqual(parameters["et"] as? String, "ping")
         XCTAssertEqual(parameters["nc"] as? String, "false")
-        XCTAssertEqual(parameters["p"] as? String, "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
+        XCTAssertEqual(parameters["p"] as? String, "/news/asia"
         XCTAssertEqual(parameters["eg"] as? Int, 0)
         XCTAssertEqual(parameters["sq"] as? Int, 1)
         XCTAssertEqual(parameters["s"] as? String, "articles only, News, Hong Kong, Health & Environment")
@@ -172,7 +172,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["d"] as? String, "scmp.com")
         XCTAssertEqual(parameters["u"] as? String, Preferences.sharedInstance.uuid)
         XCTAssertEqual(parameters["vt"] as? String, "gst")
-        XCTAssertEqual(parameters["p"] as? String, "/news/asia".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
+        XCTAssertEqual(parameters["p"] as? String, "/news/asia"
         XCTAssertEqual(parameters["eg"] as? Int, 0)
         XCTAssertEqual(parameters["sq"] as? Int, 1)
         XCTAssertEqual(parameters["s"] as? String, "articles only, News, Hong Kong, Health & Environment")
@@ -181,7 +181,7 @@ final class mirror_iosTests: XCTestCase {
         XCTAssertEqual(parameters["et"] as? String, "click")
         XCTAssertEqual(parameters["nc"] as? String, "false")
         XCTAssertEqual(parameters["ff"] as? Int, nil)
-        XCTAssertEqual(parameters["ci"] as? String, "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down".addingPercentEncoding(withAllowedCharacters: .urlHostAllowed))
+        XCTAssertEqual(parameters["ci"] as? String, "https://www.scmp.com/news/china/diplomacy/article/3155792/friends-mourn-chinas-perfect-child-zheng-shaoxiong-gunned-down"
         XCTAssertEqual(parameters["v"] as? String, mirror.agentVersion)
     }
     
