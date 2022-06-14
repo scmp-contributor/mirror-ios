@@ -96,6 +96,9 @@ public class Mirror: NSObject {
     
     // MARK: - Set Window
     public func setWindow(window: UIWindow?) {
+        if let windowGestures = window?.gestureRecognizers, windowGestures.contains(where: { $0 is MirrorGestureRecongnizer }) {
+            return
+        }
         let gesture = MirrorGestureRecongnizer(target: self, action: #selector(handleGesture(_:)))
         gesture.requiresExclusiveTouchType = false
         gesture.cancelsTouchesInView = false
@@ -271,7 +274,10 @@ extension Mirror {
         dictionary["p"] = data.path
         dictionary["u"] = uuid
         dictionary["vt"] = visitorType.rawValue
-        let eg = lround(engagedTime) > 15 ? 15 : lround(engagedTime)
+        var eg = 0
+        if pingState == .active {
+            eg = lround(engagedTime) > 15 ? 15 : lround(engagedTime)
+        }
         dictionary["eg"] = eg
         dictionary["sq"] = sequenceNumber
         
@@ -337,8 +343,6 @@ extension Mirror: UIGestureRecognizerDelegate {
                 }
             }
             
-            self.inactiveRelay.accept(false)
-            
             let ts = Date().timeIntervalSince1970
             if ts > lastTouchEndedTime,
                ts - lastTouchEndedTime <= 4 {
@@ -346,13 +350,15 @@ extension Mirror: UIGestureRecognizerDelegate {
             }
             
             setTouchTimer(enable: true)
+        case .changed:
+            break
         case .ended:
             setTouchTimer(enable: false)
             
             let ts = Date().timeIntervalSince1970
             lastTouchEndedTime = ts
         default:
-            break
+            setTouchTimer(enable: false)
         }
     }
     
@@ -364,14 +370,14 @@ extension Mirror: UIGestureRecognizerDelegate {
     
     // Touch Timer
     private func setTouchTimer(enable: Bool) {
+        touchTimer?.dispose()
+        touchTimer = nil
         if enable {
             touchTimer = Observable<Int>.timer(.milliseconds(0), period: .milliseconds(1), scheduler: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] _ in
                     self?.engagedTime += 0.001
+                    self?.inactiveRelay.accept(false)
                 })
-        } else {
-            touchTimer?.dispose()
-            touchTimer = nil
         }
     }
 }
