@@ -148,6 +148,7 @@ public class Mirror: NSObject {
         engagedTime = pingState == .background ? 0 : engagedTime
         let parameters = getParameters(eventType: .ping, data: data)
         
+        resetEngageTime()
         sendMirror(eventType: .ping, parameters: parameters)
             .subscribe(onNext: { [weak self] response in
                 guard let self = self else { return }
@@ -162,7 +163,6 @@ public class Mirror: NSObject {
                                 ====== Mirror Request Body End ======
                                 """)
                 self.lastPingData = data
-                self.resetEngageTime()
             }).disposed(by: disposeBag)
     }
     
